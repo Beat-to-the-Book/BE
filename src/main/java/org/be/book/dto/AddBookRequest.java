@@ -3,7 +3,7 @@ package org.be.book.dto;
 import lombok.Data;
 
 @Data
-public class CreateBookRequest {
+public class AddBookRequest {
     private String title;
     private String author;
     private String genre;

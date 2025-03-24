@@ -1,8 +1,11 @@
 package org.be.recommend.controller;
 
+import jakarta.transaction.Transactional;
 import org.be.book.model.Book;
 import org.be.recommend.service.RecommendService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,8 +19,11 @@ public class RecommendController {
         this.recommendService = recommendService;
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<Book>> getRecommendations(@PathVariable Long userId) {
+    @GetMapping
+    @Transactional
+    public ResponseEntity<List<Book>> getRecommendations(@AuthenticationPrincipal UserDetails userDetails) {
+        String userId = userDetails.getUsername(); // 토큰에서 UserId를 추출
+
         return ResponseEntity.ok(recommendService.getRecommendations(userId));
     }
 }

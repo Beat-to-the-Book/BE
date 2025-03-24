@@ -1,7 +1,6 @@
 package org.be.book.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import org.be.auth.model.User;
 
 import java.time.LocalDateTime;
@@ -13,12 +12,12 @@ public class Purchase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "userId", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "bookId", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
     private LocalDateTime purchaseDate = LocalDateTime.now();

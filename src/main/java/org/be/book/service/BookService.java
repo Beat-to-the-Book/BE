@@ -1,6 +1,6 @@
 package org.be.book.service;
 
-import org.be.book.dto.CreateBookRequest;
+import org.be.book.dto.AddBookRequest;
 import org.be.book.model.Book;
 import org.be.book.repository.BookRepository;
 import org.springframework.stereotype.Service;
@@ -21,19 +21,18 @@ public class BookService {
         return bookRepository.findAll();
     }
 
-    // 특정 도서 조회
-    public Book getBookById(Long id) {
-        return bookRepository.findById(id).orElseThrow(() ->
-                new RuntimeException("Book not found with id: " + id));
+    // 책 제목에 키워드가 포함된 도서 조회
+    public List<Book> searchBooksByTitle(String keyword) {
+        return bookRepository.findAllByTitleContaining(keyword);
     }
 
     // 관리자가 직접 도서 추가
-    public Book saveBook(CreateBookRequest createBookRequest) {
+    public Book saveBook(AddBookRequest addBookRequest) {
         Book book = new Book();
-        book.setTitle(createBookRequest.getTitle());
-        book.setAuthor(createBookRequest.getAuthor());
-        book.setGenre(createBookRequest.getGenre());
-        book.setPrice(createBookRequest.getPrice());
+        book.setTitle(addBookRequest.getTitle());
+        book.setAuthor(addBookRequest.getAuthor());
+        book.setGenre(addBookRequest.getGenre());
+        book.setPrice(addBookRequest.getPrice());
 
         return bookRepository.save(book);
     }
