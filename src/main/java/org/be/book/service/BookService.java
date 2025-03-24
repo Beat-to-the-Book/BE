@@ -21,10 +21,9 @@ public class BookService {
         return bookRepository.findAll();
     }
 
-    // 특정 도서 조회
-    public Book getBookById(Long id) {
-        return bookRepository.findById(id).orElseThrow(() ->
-                new RuntimeException("Book not found with id: " + id));
+    // 책 제목에 키워드가 포함된 도서 조회
+    public List<Book> searchBooksByTitle(String keyword) {
+        return bookRepository.findAllByTitleContaining(keyword);
     }
 
     // 관리자가 직접 도서 추가
