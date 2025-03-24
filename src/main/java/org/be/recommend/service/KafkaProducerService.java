@@ -17,10 +17,10 @@ public class KafkaProducerService {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendBooksForRecommendation(Long userId, List<Book> books) {
+    public void sendBooksForRecommendation(String userId, List<Book> books) {
         for (Book book : books) {
             Map<String, String> bookData = new HashMap<>();
-            bookData.put("userId", userId.toString());
+            bookData.put("userId", userId);
             bookData.put("title", book.getTitle());
             bookData.put("author", book.getAuthor());
             bookData.put("genre", book.getGenre());

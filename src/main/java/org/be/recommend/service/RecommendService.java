@@ -29,7 +29,7 @@ public class RecommendService {
         this.redisTemplate = redisTemplate;
     }
 
-    public List<Book> getRecommendations(Long userId) {
+    public List<Book> getRecommendations(String userId) {
         String redisKey = REDIS_KEY_PREFIX + userId;
 
         // Redis에서 캐싱된 추천 결과 확인
