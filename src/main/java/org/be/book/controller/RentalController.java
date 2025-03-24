@@ -17,8 +17,9 @@ public class RentalController {
         this.rentalService = rentalService;
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<Rental>> getRentalHistory(@PathVariable Long userId) {
+    // 특정 유저의 대여 기록 조회
+    @GetMapping("/history")
+    public ResponseEntity<List<Rental>> getRentalHistory(@RequestParam String userId) {
         List<Rental> rentals = rentalService.getRentalHistory(userId);
         return ResponseEntity.ok(rentals);
     }

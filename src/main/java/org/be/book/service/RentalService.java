@@ -24,8 +24,11 @@ public class RentalService {
         this.rentalRepository = rentalRepository;
     }
 
-    public List<Rental> getRentalHistory(Long userId) {
-        return rentalRepository.findByUserId(userId);
+    public List<Rental> getRentalHistory(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
+
+        return rentalRepository.findByUser(user);
     }
 
     public Rental addRental(AddRentalRequest addRentalRequest) {

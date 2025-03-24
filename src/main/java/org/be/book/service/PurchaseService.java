@@ -24,8 +24,11 @@ public class PurchaseService {
         this.purchaseRepository = purchaseRepository;
     }
 
-    public List<Purchase> getPurchaseHistory(Long userId) {
-        return purchaseRepository.findByUserId(userId);
+    public List<Purchase> getPurchaseHistory(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
+
+        return purchaseRepository.findByUser(user);
     }
 
     public Purchase addPurchase(AddPurchaseRequest addPurchaseRequest) {

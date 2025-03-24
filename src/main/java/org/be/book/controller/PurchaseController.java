@@ -17,8 +17,9 @@ public class PurchaseController {
         this.purchaseService = purchaseService;
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<Purchase>> getPurchaseHistory(@PathVariable Long userId) {
+    // 특정 유저의 대여 기록 조회
+    @GetMapping("/history")
+    public ResponseEntity<List<Purchase>> getPurchaseHistory(@RequestParam String userId) {
         List<Purchase> purchases = purchaseService.getPurchaseHistory(userId);
         return ResponseEntity.ok(purchases);
     }
