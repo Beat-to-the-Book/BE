@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/purchase")
+@RequestMapping("/api/purchase")
 public class PurchaseController {
     private final PurchaseService purchaseService;
 
@@ -22,8 +22,9 @@ public class PurchaseController {
         return ResponseEntity.ok(purchases);
     }
 
-    @PostMapping
-    public ResponseEntity<Purchase> addPurchase(@RequestBody Purchase purchase) {
-        return ResponseEntity.ok(purchaseService.addPurchase(purchase));
+    // 관리자가 직접 구매 도서 추가
+    @PostMapping("/add")
+    public ResponseEntity<Purchase> addPurchase(@RequestBody AddPurchaseRequest addPurchaseRequest) {
+        return ResponseEntity.ok(purchaseService.addPurchase(addPurchaseRequest));
     }
 }
