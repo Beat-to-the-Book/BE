@@ -12,11 +12,11 @@ public class Rating {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "bookId", nullable = false)
+    @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
     @NotNull
