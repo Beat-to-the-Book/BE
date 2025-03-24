@@ -1,5 +1,6 @@
 package org.be.book.controller;
 
+import org.be.book.dto.AddPurchaseRequest;
 import org.be.book.model.Purchase;
 import org.be.book.service.PurchaseService;
 import org.springframework.http.ResponseEntity;
