@@ -8,4 +8,8 @@ public class AddBookRequest {
     private String author;
     private String genre;
     private Double price;
+    private String bookDescription;
+    private String publisher;
+    private String publishedDate;
+    private String coverImage;
 }

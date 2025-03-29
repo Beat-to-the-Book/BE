@@ -27,12 +27,21 @@ public class BookService {
     }
 
     // 관리자가 직접 도서 추가
-    public Book saveBook(AddBookRequest addBookRequest) {
+    public Book saveBook(AddBookRequest request) {
+        boolean exists = bookRepository.existsByTitleAndAuthor(request.getTitle(), request.getAuthor());
+        if (exists) {
+            return null;
+        }
+
         Book book = new Book();
-        book.setTitle(addBookRequest.getTitle());
-        book.setAuthor(addBookRequest.getAuthor());
-        book.setGenre(addBookRequest.getGenre());
-        book.setPrice(addBookRequest.getPrice());
+        book.setTitle(request.getTitle());
+        book.setAuthor(request.getAuthor());
+        book.setGenre(request.getGenre());
+        book.setBookDescription(request.getBookDescription());
+        book.setPrice(request.getPrice());
+        book.setPublisher(request.getPublisher());
+        book.setPublishDate(request.getPublishedDate());
+        book.setCoverImageUrl(request.getCoverImage());
 
         return bookRepository.save(book);
     }
