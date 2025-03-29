@@ -1,20 +1,25 @@
 package org.be.book.controller;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.be.book.dto.AddBookRequest;
 import org.be.book.model.Book;
+import org.be.book.service.BookCrawlingService;
 import org.be.book.service.BookService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/book")
+@RequiredArgsConstructor
 public class BookController {
-    @Autowired
-    private BookService bookService;
+
+    private final BookService bookService;
+    private final BookCrawlingService bookCrawlingService;
 
     // 모든 도서 조회
     @GetMapping
@@ -34,5 +39,17 @@ public class BookController {
     public ResponseEntity<Book> createBook(@RequestBody AddBookRequest addBookRequest) {
         Book savedBook = bookService.saveBook(addBookRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedBook);
+    }
+
+    // 테스트용 수동 크롤링 호출 API
+    @PostMapping("/crawl")
+    public ResponseEntity<String> crawlBooks() {
+        try {
+            bookCrawlingService.crawlBooks();
+            return ResponseEntity.ok("크롤링 성공");
+        } catch (Exception e) {
+            log.error("크롤링 중 에러 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body("크롤링 실패");
+        }
     }
 }
