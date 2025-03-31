@@ -5,9 +5,10 @@ import org.be.recommend.dto.RecommendationMessage;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class KafkaProducerService {
@@ -18,13 +19,8 @@ public class KafkaProducerService {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendBooksForRecommendation(String userId, List<Book> books) {
-        for (Book book : books) {
-            Map<String, String> bookData = new HashMap<>();
-            bookData.put("userId", userId);
-            bookData.put("title", book.getTitle());
-            bookData.put("author", book.getAuthor());
-            bookData.put("genre", book.getGenre());
+    private static final Logger log = LoggerFactory.getLogger(RecommendService.class);
+
     public void sendBooksForRecommendation(String userId, List<BookDto> books) {
         List<BookDto> bookDtos = books.stream()
                 .map(book -> new BookDto(book.getTitle(), book.getAuthor(), book.getGenre()))
