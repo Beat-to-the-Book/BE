@@ -37,11 +37,11 @@ public class BookService {
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
         book.setGenre(request.getGenre());
-        book.setBookDescription(request.getBookDescription());
         book.setPrice(request.getPrice());
         book.setPublisher(request.getPublisher());
         book.setPublishDate(request.getPublishedDate());
-        book.setCoverImageUrl(request.getCoverImage());
+        book.setLeftCoverImageUrl(request.getLeftCoverImageUrl());
+        book.setFrontCoverImageUrl(request.getFrontCoverImageUrl());
 
         return bookRepository.save(book);
     }
