@@ -1,10 +1,12 @@
 package org.be.recommend.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import org.be.book.model.Book;
 import org.be.recommend.dto.BookDto;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -38,13 +40,12 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, List<Book>> redisTemplate() {
+    public RedisTemplate<String, List<Book>> redisTemplateBook(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, List<Book>> template = new RedisTemplate<>();
-        template.setConnectionFactory(redisConnectionFactory());
+        template.setConnectionFactory(connectionFactory);
 
-        // 직렬화 설정 (JSON 형식 저장)
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper()));
 
         return template;
     }

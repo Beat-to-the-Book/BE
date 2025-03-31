@@ -7,8 +7,8 @@ import org.be.book.model.Rental;
 import org.be.book.repository.PurchaseRepository;
 import org.be.book.repository.RentalRepository;
 import org.be.recommend.dto.BookDto;
-import org.springframework.stereotype.Service;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,7 +44,18 @@ public class RecommendService {
 
         // Redis에서 캐싱된 추천 결과 확인 - 있으면 바로 응담, 없으면 추천 요청
         List<BookDto> cachedRecommendations = redisTemplate.opsForValue().get(redisKey);
+        if (cachedRecommendations != null && !cachedRecommendations.isEmpty()) {
+            // 캐시 히트
+            log.info("[CACHE HIT] 추천 결과 반환 - userId={}, 책 수={}", userId, cachedRecommendations.size());
+
+            cachedRecommendations.forEach(book -> log.info("추천 도서 - 제목: {}, 작가: {}, 장르: {}",
+                    book.getTitle(), book.getAuthor(), book.getGenre()));
+
             return cachedRecommendations;
+        } else {
+            // 캐시는 존재하나 값이 비어있거나 null → 삭제 후 Kafka 재요청 트리거 유도
+            log.warn("KafkaConsumer: 추천 결과가 비어 있음 - userId={}", userId);
+            redisTemplate.delete(redisKey);
         }
 
         log.info("[CACHE MISS] Redis에 추천 없음. Kafka로 추천 요청 예정 - userId={}", userId);
@@ -53,8 +64,6 @@ public class RecommendService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
 
-        // 사용자가 대여 또는 구매한 책 조회
-        List<Book> books = purchaseRepository.findByUser(user).stream()
         // 사용자의 구매 도서 조회
         List<BookDto> purchasedBooks = purchaseRepository.findByUser(user).stream()
                 .map(Purchase::getBook)
