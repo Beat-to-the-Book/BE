@@ -21,6 +21,7 @@ public class KafkaConsumerService {
     public void consumeRecommendation(Map<String, Object> recommendationData) {
         Long userId = Long.valueOf(recommendationData.get("userId").toString());
         List<Book> recommendedBooks = (List<Book>) recommendationData.get("books");
+        String userId = message.getUserId();
 
         // Redis에 추천 결과 저장 (10분 캐싱)
         redisTemplate.opsForValue().set(REDIS_KEY_PREFIX + userId, recommendedBooks);
