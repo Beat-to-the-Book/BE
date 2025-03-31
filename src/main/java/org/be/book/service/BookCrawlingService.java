@@ -82,14 +82,6 @@ public class BookCrawlingService {
                 String numericPrice = priceText.replaceAll("[^0-9]", "");
                 Double price = numericPrice.isEmpty() ? 0.0 : Double.parseDouble(numericPrice);
 
-                // (4) 리스트 페이지에서 장르 추출
-                Element genreEl = bookElement.selectFirst("span.tit_category");
-                String rawGenre = (genreEl != null) ? genreEl.text() : "";
-                String genre = rawGenre.replace("[", "").replace("]", "").trim();
-                if (genre.isEmpty()) {
-                    genre = "장르 없음";
-                }
-
                 // (5) 리스트 페이지에서 상세 페이지 링크 추출 (bo3 안의 <a> 태그)
                 Element detailLinkEl = titleElement.selectFirst("a");
                 if (detailLinkEl == null) {
@@ -99,27 +91,15 @@ public class BookCrawlingService {
                 String detailUrl = detailLinkEl.absUrl("href");
 
                 // (6) 상세 페이지에서 커버 이미지(앞, 뒤, 왼쪽) 추출
-                String frontCoverImageUrlDetail = "이미지 없음";
-                String backCoverImageUrlDetail = "이미지 없음";
-                String leftCoverImageUrlDetail = "이미지 없음";
+                String frontCoverImageUrlDetail = "http://localhost:8082/images/default_cover.jpg";
+                String backCoverImageUrlDetail = "http://localhost:8082/images/default_cover.jpg";
+                String leftCoverImageUrlDetail = "http://localhost:8082/images/default_cover.jpg";
+                String genre = "장르 없음";
 
                 WebDriver detailDriver = new ChromeDriver(options);
                 try {
                     detailDriver.get(detailUrl);
                     WebDriverWait wait = new WebDriverWait(detailDriver, Duration.ofSeconds(10));
-
-
-                    //(이건 주제 분륜데,,,)
-//                    try {
-//                        WebElement descElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
-//                                By.cssSelector("div#Ere_prod_allwrap > div.Ere_prod_middlewrap > div.Ere_prod_mconts_box > div.Ere_prod_mconts_R")
-//                        ));
-//                        bookDescription = descElement.getText().trim();
-//                    } catch (TimeoutException e) {
-//                        log.warn("책 소개 로딩 실패");
-//                    }
-//                    log.info("책 소개: {}", bookDescription);
-
 
                     // 앞 커버 이미지 추출
                     try {
@@ -150,6 +130,30 @@ public class BookCrawlingService {
                     } catch (TimeoutException e) {
                         log.warn("왼쪽 커버 이미지를 찾지 못했습니다.");
                     }
+
+                    // 장르 추출
+                    try {
+                        WebElement descElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                                By.cssSelector("div#Ere_prod_allwrap > div.Ere_prod_middlewrap > div.Ere_prod_mconts_box > div.Ere_prod_mconts_R > div.conts_info_list2")
+                        ));
+                        String fullGenre = descElement.getText().trim();
+                        String[] genreParts = fullGenre.split(">");
+
+                        if (genreParts.length >= 2) {
+                            genre = genreParts[1].trim();
+                        } else if (genreParts.length >= 1 && !genreParts[0].trim().isEmpty()) {
+                            genre = genreParts[0].trim();
+                        } else {
+                            genre = "기타";
+                        }
+                        if (genre.trim().isEmpty()) {
+                            genre = "기타";
+                        }
+                    } catch (TimeoutException e) {
+                        log.warn("책 장르 로딩 실패");
+                        genre = "기타";
+                    }
+
                 } finally {
                     detailDriver.quit();
                 }
@@ -170,6 +174,7 @@ public class BookCrawlingService {
                         title,
                         author,
                         price,
+                        genre,
                         publisher,
                         publishDate,
                         frontCoverImageUrlDetail // 대표 이미지로 앞 커버 사용
@@ -177,7 +182,6 @@ public class BookCrawlingService {
                 book.setFrontCoverImageUrl(frontCoverImageUrlDetail);
                 book.setBackCoverImageUrl(backCoverImageUrlDetail);
                 book.setLeftCoverImageUrl(leftCoverImageUrlDetail);
-                book.setGenre(genre);
 
                 try {
                     bookRepository.save(book);
