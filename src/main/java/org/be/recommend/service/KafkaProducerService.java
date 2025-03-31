@@ -30,11 +30,15 @@ public class KafkaProducerService {
                 .map(book -> new BookDto(book.getTitle(), book.getAuthor(), book.getGenre()))
                 .toList();
 
-            kafkaTemplate.send(TOPIC, bookData);
         RecommendationMessage message = new RecommendationMessage();
         message.setUserId(userId);
         message.setBooks(bookDtos);
 
+        try {
+            log.info("Kafka 전송 데이터: {}", message);
+            kafkaTemplate.send(TOPIC, message).get(); // 비동기 전송 후 결과 대기
+        } catch (Exception e) {
+            throw new RuntimeException("Kafka 메시지 전송 실패: " + e.getMessage());
         }
     }
 }
