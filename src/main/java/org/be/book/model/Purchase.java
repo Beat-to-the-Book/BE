@@ -1,5 +1,6 @@
 package org.be.book.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.be.auth.model.User;
 
@@ -14,6 +15,7 @@ public class Purchase {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+//    @JsonIgnore
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -3,12 +3,14 @@ package org.be.book.service;
 import org.be.auth.model.User;
 import org.be.auth.repository.UserRepository;
 import org.be.book.dto.AddPurchaseRequest;
+import org.be.book.dto.HistoryPurchaseResponse;
 import org.be.book.model.Book;
 import org.be.book.model.Purchase;
 import org.be.book.repository.BookRepository;
 import org.be.book.repository.PurchaseRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PurchaseService {
@@ -24,11 +26,15 @@ public class PurchaseService {
         this.purchaseRepository = purchaseRepository;
     }
 
-    public List<Purchase> getPurchaseHistory(String userId) {
+    public List<HistoryPurchaseResponse> getPurchaseHistory(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
 
-        return purchaseRepository.findByUser(user);
+        List<Purchase> purchases = purchaseRepository.findByUser(user);
+
+        return purchases.stream()
+                .map(HistoryPurchaseResponse::new)
+                .collect(Collectors.toList());
     }
 
     public Purchase addPurchase(AddPurchaseRequest addPurchaseRequest) {

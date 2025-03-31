@@ -1,7 +1,7 @@
 package org.be.recommend.controller;
 
 import jakarta.transaction.Transactional;
-import org.be.book.model.Book;
+import org.be.recommend.dto.BookDto;
 import org.be.recommend.service.RecommendService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,7 +21,7 @@ public class RecommendController {
 
     @GetMapping
     @Transactional
-    public ResponseEntity<List<Book>> getRecommendations(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<BookDto>> getRecommendations(@AuthenticationPrincipal UserDetails userDetails) {
         String userId = userDetails.getUsername(); // 토큰에서 UserId를 추출
 
         return ResponseEntity.ok(recommendService.getRecommendations(userId));
