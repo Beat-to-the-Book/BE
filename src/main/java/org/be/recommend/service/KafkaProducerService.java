@@ -1,6 +1,7 @@
 package org.be.recommend.service;
 
 import org.be.book.model.Book;
+import org.be.recommend.dto.BookDto;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,10 @@ public class KafkaProducerService {
             bookData.put("title", book.getTitle());
             bookData.put("author", book.getAuthor());
             bookData.put("genre", book.getGenre());
+    public void sendBooksForRecommendation(String userId, List<BookDto> books) {
+        List<BookDto> bookDtos = books.stream()
+                .map(book -> new BookDto(book.getTitle(), book.getAuthor(), book.getGenre()))
+                .toList();
 
             kafkaTemplate.send(TOPIC, bookData);
         }

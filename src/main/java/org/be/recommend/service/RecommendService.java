@@ -2,11 +2,11 @@ package org.be.recommend.service;
 
 import org.be.auth.model.User;
 import org.be.auth.repository.UserRepository;
-import org.be.book.model.Book;
 import org.be.book.model.Purchase;
 import org.be.book.model.Rental;
 import org.be.book.repository.PurchaseRepository;
 import org.be.book.repository.RentalRepository;
+import org.be.recommend.dto.BookDto;
 import org.springframework.stereotype.Service;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -19,14 +19,14 @@ public class RecommendService {
     private final PurchaseRepository purchaseRepository;
     private final RentalRepository rentalRepository;
     private final KafkaProducerService kafkaProducerService;
-    private final RedisTemplate<String, List<Book>> redisTemplate;
+    private final RedisTemplate<String, List<BookDto>> redisTemplate;
     private static final String REDIS_KEY_PREFIX = "recommend:user:";
 
     public RecommendService(UserRepository userRepository,
                             PurchaseRepository purchaseRepository,
                             RentalRepository rentalRepository,
                             KafkaProducerService kafkaProducerService,
-                            RedisTemplate<String, List<Book>> redisTemplate) {
+                            RedisTemplate<String, List<BookDto>> redisTemplate) {
         this.userRepository = userRepository;
         this.purchaseRepository = purchaseRepository;
         this.rentalRepository = rentalRepository;
@@ -35,11 +35,14 @@ public class RecommendService {
     }
 
     public List<Book> getRecommendations(String userId) {
+    public List<BookDto> getRecommendations(String userId) {
         String redisKey = REDIS_KEY_PREFIX + userId;
 
         // Redis에서 캐싱된 추천 결과 확인
         List<Book> cachedRecommendations = redisTemplate.opsForValue().get(redisKey);
         if (cachedRecommendations != null) {
+        // Redis에서 캐싱된 추천 결과 확인 - 있으면 바로 응담, 없으면 추천 요청
+        List<BookDto> cachedRecommendations = redisTemplate.opsForValue().get(redisKey);
             return cachedRecommendations;
         }
 
@@ -49,7 +52,10 @@ public class RecommendService {
 
         // 사용자가 대여 또는 구매한 책 조회
         List<Book> books = purchaseRepository.findByUser(user).stream()
+        // 사용자의 구매 도서 조회
+        List<BookDto> purchasedBooks = purchaseRepository.findByUser(user).stream()
                 .map(Purchase::getBook)
+                .map(BookDto::from)
                 .collect(Collectors.toList());
 
         books.addAll(rentalRepository.findByUser(user).stream()
