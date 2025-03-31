@@ -1,0 +1,14 @@
+# Corretto 기반 Spring Boot Dockerfile
+FROM openjdk:17-slim
+
+# 크롬 및 크롬드라이버 설치 (필요 시)
+RUN apt-get update && \
+    apt-get install -y wget unzip curl gnupg ca-certificates \
+                       chromium chromium-driver && \
+    apt-get clean
+
+WORKDIR /app
+
+COPY build/libs/*.jar app.jar
+
+CMD ["java", "-jar", "app.jar"]
