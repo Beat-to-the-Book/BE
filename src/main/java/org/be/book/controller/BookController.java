@@ -27,7 +27,13 @@ public class BookController {
         return bookService.getAllBooks();
     }
 
-    // 특정 도서 조회
+    // 한 권 호출
+    @GetMapping("/{id}")
+    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
+        return ResponseEntity.ok(bookService.getBookById(id));
+    }
+
+    // 특정 도서 조회 (검색)
     @GetMapping("/search")
     public ResponseEntity<List<Book>> searchBooks(@RequestParam String keyword) {
         // 책 제목에 키워드가 포함된 도서 조회
