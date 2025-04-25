@@ -28,7 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException{
         String token = getTokenFromRequest(request);
-
+        System.out.println("🔥🔥🔥 JwtAuthenticationFilter 작동 시작!");
         if(StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
             String userId = jwtTokenProvider.getUserIdFromToken(token);
             try{
@@ -37,6 +37,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                System.out.println("✅ 인증 객체 등록됨: " + authentication);
+                System.out.println("✅ 인증 상태: " + authentication.isAuthenticated());
+
             } catch (UsernameNotFoundException e){
                 logger.error("Username not found : " + userId, e);
             }

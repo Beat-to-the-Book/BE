@@ -19,7 +19,7 @@ public class User {
 
     @NotBlank
     @Size(min = 3, max = 20)
-    @Column(unique = true, nullable = false)
+    @Column(name = "user_id", unique = true, nullable = false)
     private String userId;
 
     @NotBlank
