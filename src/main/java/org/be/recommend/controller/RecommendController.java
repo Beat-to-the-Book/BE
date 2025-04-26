@@ -45,7 +45,9 @@ public class RecommendController {
         recommendService.recommendBooks(userId, recommendRequest);
 
         // 추천 생성 중이니까 "추천 생성 요청 완료" 메시지를 응답
-        return ResponseEntity.ok("추천 생성 요청 완료. 잠시 후 다시 요청하세요.");
+        // 추천 결과가 아직 생성되지 않았음을 알려줌
+        return ResponseEntity.status(202) // 202 Accepted
+                .body("추천 결과를 생성 중입니다. 잠시 후 다시 요청하세요.");
     }
 
 }
