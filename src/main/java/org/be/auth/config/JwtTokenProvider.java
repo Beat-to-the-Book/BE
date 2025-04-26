@@ -18,7 +18,6 @@ public class JwtTokenProvider {
     private long jwtExpirationInMs;
 
     public String generateToken(String userId) {
-        System.out.println("Generating JWT with userId: " + userId);
         return JWT.create()
                 .withSubject(userId)
                 .withIssuedAt(new Date())
@@ -39,7 +38,6 @@ public class JwtTokenProvider {
 
     public String getUserIdFromToken(String token) {
         String userId = JWT.decode(token).getSubject();
-        System.out.println("Extracted userId from JWT: " + userId);
         return userId;
     }
 }
