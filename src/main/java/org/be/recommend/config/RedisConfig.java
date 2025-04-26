@@ -3,8 +3,7 @@ package org.be.recommend.config;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import org.be.book.model.Book;
-import org.be.recommend.dto.BookDto;
+import org.be.recommend.dto.RecommendResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -19,7 +18,7 @@ public class RedisConfig {
 
     private ObjectMapper objectMapper() {
         BasicPolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-                .allowIfSubType("org.be")           // Book, BookDto 등 허용
+                .allowIfSubType("org.be")           // Entity, Dto 등 허용
                 .allowIfSubType("java.util")        // List, ArrayList 등 허용
                 .build();
 
@@ -29,8 +28,8 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, List<BookDto>> redisTemplateBookDto(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, List<BookDto>> template = new RedisTemplate<>();
+    public RedisTemplate<String, RecommendResponse> redisTemplateRecommendResponse(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, RecommendResponse> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
         template.setKeySerializer(new StringRedisSerializer());

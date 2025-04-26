@@ -3,6 +3,7 @@ package org.be.recommend.controller;
 import jakarta.transaction.Transactional;
 import org.be.recommend.dto.BehaviorRequest;
 import org.be.recommend.dto.BookDto;
+import org.be.recommend.dto.RecommendResponse;
 import org.be.recommend.service.RecommendService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/recommend")
@@ -32,7 +31,7 @@ public class RecommendController {
             @RequestBody BehaviorRequest behaviorRequest) {
 
         String userId = userDetails.getUsername();
-        List<BookDto> cachedRecommendations = recommendService.checkCache(userId);
+        RecommendResponse cachedRecommendations = recommendService.checkCache(userId);
 
         // null이거나 캐시는 존재하나 값이 비어있지 않으면
         if (cachedRecommendations != null && !cachedRecommendations.isEmpty()) {

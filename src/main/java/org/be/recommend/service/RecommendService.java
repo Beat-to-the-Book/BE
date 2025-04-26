@@ -9,6 +9,7 @@ import org.be.book.repository.RentalRepository;
 import org.be.recommend.dto.BehaviorRequest;
 import org.be.recommend.dto.BookDto;
 import org.be.recommend.dto.FlaskRecommendationMessage;
+import org.be.recommend.dto.RecommendResponse;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,7 @@ public class RecommendService {
     private final PurchaseRepository purchaseRepository;
     private final RentalRepository rentalRepository;
     private final KafkaProducerService kafkaProducerService;
-    private final RedisTemplate<String, List<BookDto>> redisTemplate;
+    private final RedisTemplate<String, RecommendResponse> redisTemplate;
     private static final String REDIS_KEY_PREFIX = "recommend:user:";
 
     private static final Logger log = LoggerFactory.getLogger(RecommendService.class);
@@ -34,7 +35,7 @@ public class RecommendService {
                             PurchaseRepository purchaseRepository,
                             RentalRepository rentalRepository,
                             KafkaProducerService kafkaProducerService,
-                            RedisTemplate<String, List<BookDto>> redisTemplate) {
+                            RedisTemplate<String, RecommendResponse> redisTemplate) {
         this.userRepository = userRepository;
         this.purchaseRepository = purchaseRepository;
         this.rentalRepository = rentalRepository;
@@ -42,12 +43,11 @@ public class RecommendService {
         this.redisTemplate = redisTemplate;
     }
 
-    public List<BookDto> checkCache(String userId) {
+    public RecommendResponse checkCache(String userId) {
         String redisKey = REDIS_KEY_PREFIX + userId;
 
         // Redis에서 캐싱된 추천 결과 확인 - 있으면 바로 응담, 없으면 추천 요청
-        List<BookDto> cachedRecommendations = redisTemplate.opsForValue().get(redisKey);
-        return cachedRecommendations;
+        return redisTemplate.opsForValue().get(redisKey);
     }
 
     public void recommendBooks(String userId, BehaviorRequest behaviorRequest) {
