@@ -1,8 +1,7 @@
 package org.be.recommend.service;
 
-import org.be.recommend.dto.BookDto;
-import org.be.recommend.dto.RecommendationResultMessage;
 import org.be.recommend.dto.RecommendResponse;
+import org.be.recommend.dto.RecommendResponseMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,7 +21,7 @@ public class KafkaConsumerService {
     }
 
     @KafkaListener(topics = "recommendation_topic", groupId = "recommendation_group")
-    public void consumeRecommendation(RecommendationResultMessage message) {
+    public void consumeRecommendation(RecommendResponseMessage message) {
         String userId = message.getUserId();
 
         RecommendResponse recommendResponse = new RecommendResponse();

@@ -2,7 +2,7 @@ package org.be.recommend.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.be.recommend.dto.FlaskRecommendationMessage;
+import org.be.recommend.dto.RecommendRequestMessage;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -23,11 +23,12 @@ public class KafkaProducerService {
         this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // null 필드 제거
     }
 
-    public void sendToFlask(FlaskRecommendationMessage message) {
+    public void sendToFlask(RecommendRequestMessage message) {
         try {
             String jsonMessage = objectMapper.writeValueAsString(message);
-            kafkaTemplate.send(TOPIC, jsonMessage).get(); // 변환된 JSON 문자열을 Kafka로 전송
             log.info("Kafka 전송 데이터(JSON): {}", jsonMessage);
+
+            kafkaTemplate.send(TOPIC, jsonMessage).get(); // 변환된 JSON 문자열을 Kafka로 전송
         } catch (Exception e) {
             throw new RuntimeException("Kafka 메시지 전송 실패: " + e.getMessage(), e);
         }

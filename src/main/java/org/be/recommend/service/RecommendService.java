@@ -8,6 +8,7 @@ import org.be.book.repository.PurchaseRepository;
 import org.be.book.repository.RentalRepository;
 import org.be.recommend.dto.RecommendRequest;
 import org.be.recommend.dto.RecommendResponse;
+import org.be.recommend.dto.RecommendRequestMessage;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -54,10 +55,11 @@ public class RecommendService {
                 .orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
 
         // 사용자의 구매 도서 조회
-        List<FlaskRecommendationMessage.ReadBook> purchasedBooks = purchaseRepository.findByUser(user).stream()
+        List<RecommendRequestMessage.ReadBook> purchasedBooks = purchaseRepository.findByUser(user).stream()
                 .map(Purchase::getBook)
                 .map(book -> {
-                    FlaskRecommendationMessage.ReadBook dto = new FlaskRecommendationMessage.ReadBook();
+                    RecommendRequestMessage.ReadBook dto = new RecommendRequestMessage.ReadBook();
+                    dto.setBookId(book.getId());
                     dto.setTitle(book.getTitle() == null ? "" : book.getTitle());
                     dto.setAuthor(book.getAuthor() == null ? "" : book.getAuthor());
                     dto.setGenre(book.getGenre() == null ? "" : book.getGenre());
@@ -71,10 +73,11 @@ public class RecommendService {
         );
 
         // 사용자의 대여 도서 조회
-        List<FlaskRecommendationMessage.ReadBook> rentedBooks = rentalRepository.findByUser(user).stream()
+        List<RecommendRequestMessage.ReadBook> rentedBooks = rentalRepository.findByUser(user).stream()
                 .map(Rental::getBook)
                 .map(book -> {
-                    FlaskRecommendationMessage.ReadBook dto = new FlaskRecommendationMessage.ReadBook();
+                    RecommendRequestMessage.ReadBook dto = new RecommendRequestMessage.ReadBook();
+                    dto.setBookId(book.getId());
                     dto.setTitle(book.getTitle() == null ? "" : book.getTitle());
                     dto.setAuthor(book.getAuthor() == null ? "" : book.getAuthor());
                     dto.setGenre(book.getGenre() == null ? "" : book.getGenre());
@@ -88,7 +91,7 @@ public class RecommendService {
         );
 
         // 전체 도서 목록
-        List<FlaskRecommendationMessage.ReadBook> readBooks = new ArrayList<>();
+        List<RecommendRequestMessage.ReadBook> readBooks = new ArrayList<>();
         readBooks.addAll(purchasedBooks);
         readBooks.addAll(rentedBooks);
 
@@ -96,13 +99,13 @@ public class RecommendService {
             throw new RuntimeException(userId + " 사용자가 대여하거나 구매한 책이 없습니다.");
         }
 
-        FlaskRecommendationMessage message = new FlaskRecommendationMessage();
+        RecommendRequestMessage message = new RecommendRequestMessage();
         message.setUserId(userId);
         message.setReadBooks(readBooks);
         message.setUserBehaviors(
                 recommendRequest.getUserBehaviors().stream()
                         .map(b -> {
-                            FlaskRecommendationMessage.BehaviorBook behavior = new FlaskRecommendationMessage.BehaviorBook();
+                            RecommendRequestMessage.UserBehavior behavior = new RecommendRequestMessage.UserBehavior();
                             behavior.setBookId(b.getBookId());
                             behavior.setClickCount(b.getClickCount());
                             behavior.setStayTime(b.getStayTime());

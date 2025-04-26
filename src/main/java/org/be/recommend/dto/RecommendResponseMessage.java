@@ -6,7 +6,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class RecommendationResultMessage {
+public class RecommendResponseMessage {
     private String userId;
-    private List<BookDto> books;
+    private List<RecommendResponse.RecommendBook> books;
 }
