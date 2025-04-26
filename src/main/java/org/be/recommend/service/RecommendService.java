@@ -6,9 +6,7 @@ import org.be.book.model.Purchase;
 import org.be.book.model.Rental;
 import org.be.book.repository.PurchaseRepository;
 import org.be.book.repository.RentalRepository;
-import org.be.recommend.dto.BehaviorRequest;
-import org.be.recommend.dto.BookDto;
-import org.be.recommend.dto.FlaskRecommendationMessage;
+import org.be.recommend.dto.RecommendRequest;
 import org.be.recommend.dto.RecommendResponse;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -50,7 +48,7 @@ public class RecommendService {
         return redisTemplate.opsForValue().get(redisKey);
     }
 
-    public void recommendBooks(String userId, BehaviorRequest behaviorRequest) {
+    public void recommendBooks(String userId, RecommendRequest recommendRequest) {
         // JWT 토큰에서 사용자 추출
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
@@ -101,8 +99,8 @@ public class RecommendService {
         FlaskRecommendationMessage message = new FlaskRecommendationMessage();
         message.setUserId(userId);
         message.setReadBooks(readBooks);
-        message.setBehavior(
-                behaviorRequest.getBooks().stream()
+        message.setUserBehaviors(
+                recommendRequest.getUserBehaviors().stream()
                         .map(b -> {
                             FlaskRecommendationMessage.BehaviorBook behavior = new FlaskRecommendationMessage.BehaviorBook();
                             behavior.setBookId(b.getBookId());
@@ -114,12 +112,12 @@ public class RecommendService {
         );
 
         log.info("Spring Boot 추천 요청 전송 - userId={}, 읽은 책 수={}, 행동 데이터 수={}",
-                userId, readBooks.size(), behaviorRequest.getBooks().size());
+                userId, readBooks.size(), recommendRequest.getUserBehaviors().size());
         log.info("읽은 책 전체 목록 (구매+대여): {}", readBooks.stream()
                 .map(b -> String.format("[title=%s, author=%s, genre=%s]", b.getTitle(), b.getAuthor(), b.getGenre()))
                 .collect(Collectors.joining(", "))
         );
-        log.info("행동 데이터 목록: {}", behaviorRequest.getBooks().stream()
+        log.info("행동 데이터 목록: {}", recommendRequest.getUserBehaviors().stream()
                 .map(b -> String.format("[bookId=%s, clickCount=%s, stayTime=%s]", b.getBookId(), b.getClickCount(), b.getStayTime()))
                 .collect(Collectors.joining(", "))
         );
