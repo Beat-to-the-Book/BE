@@ -6,10 +6,13 @@ import org.be.book.model.Purchase;
 import org.be.book.model.Rental;
 import org.be.book.repository.PurchaseRepository;
 import org.be.book.repository.RentalRepository;
+import org.be.recommend.dto.BehaviorRequest;
 import org.be.recommend.dto.BookDto;
+import org.be.recommend.dto.FlaskRecommendationMessage;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +28,8 @@ public class RecommendService {
     private final RedisTemplate<String, List<BookDto>> redisTemplate;
     private static final String REDIS_KEY_PREFIX = "recommend:user:";
 
+    private static final Logger log = LoggerFactory.getLogger(RecommendService.class);
+
     public RecommendService(UserRepository userRepository,
                             PurchaseRepository purchaseRepository,
                             RentalRepository rentalRepository,
@@ -37,65 +42,89 @@ public class RecommendService {
         this.redisTemplate = redisTemplate;
     }
 
-    private static final Logger log = LoggerFactory.getLogger(RecommendService.class);
-
-    public List<BookDto> getRecommendations(String userId) {
+    public List<BookDto> checkCache(String userId) {
         String redisKey = REDIS_KEY_PREFIX + userId;
 
         // Redis에서 캐싱된 추천 결과 확인 - 있으면 바로 응담, 없으면 추천 요청
         List<BookDto> cachedRecommendations = redisTemplate.opsForValue().get(redisKey);
-        if (cachedRecommendations != null && !cachedRecommendations.isEmpty()) {
-            // 캐시 히트
-            log.info("[CACHE HIT] 추천 결과 반환 - userId={}, 책 수={}", userId, cachedRecommendations.size());
+        return cachedRecommendations;
+    }
 
-            cachedRecommendations.forEach(book -> log.info("추천 도서 - 제목: {}, 작가: {}, 장르: {}",
-                    book.getTitle(), book.getAuthor(), book.getGenre()));
-
-            return cachedRecommendations;
-        } else {
-            // 캐시는 존재하나 값이 비어있거나 null → 삭제 후 Kafka 재요청 트리거 유도
-            log.warn("KafkaConsumer: 추천 결과가 비어 있음 - userId={}", userId);
-            redisTemplate.delete(redisKey);
-        }
-
-        log.info("[CACHE MISS] Redis에 추천 없음. Kafka로 추천 요청 예정 - userId={}", userId);
-
+    public void recommendBooks(String userId, BehaviorRequest behaviorRequest) {
         // JWT 토큰에서 사용자 추출
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
 
         // 사용자의 구매 도서 조회
-        List<BookDto> purchasedBooks = purchaseRepository.findByUser(user).stream()
+        List<FlaskRecommendationMessage.ReadBook> purchasedBooks = purchaseRepository.findByUser(user).stream()
                 .map(Purchase::getBook)
-                .map(BookDto::from)
-                .collect(Collectors.toList());
+                .map(book -> {
+                    FlaskRecommendationMessage.ReadBook dto = new FlaskRecommendationMessage.ReadBook();
+                    dto.setTitle(book.getTitle() == null ? "" : book.getTitle());
+                    dto.setAuthor(book.getAuthor() == null ? "" : book.getAuthor());
+                    dto.setGenre(book.getGenre() == null ? "" : book.getGenre());
+                    return dto;
+                }).collect(Collectors.toList());
 
-        log.info("구매한 책 수: {}, 목록: {}", purchasedBooks.size(),
-                purchasedBooks.stream().map(BookDto::getTitle).toList());
+        log.info("구매한 책 수: {}", purchasedBooks.size());
+        log.info("구매한 책 목록: {}", purchasedBooks.stream()
+                .map(b -> String.format("[title=%s, author=%s, genre=%s]", b.getTitle(), b.getAuthor(), b.getGenre()))
+                .collect(Collectors.joining(", "))
+        );
 
         // 사용자의 대여 도서 조회
-        List<BookDto> rentedBooks = rentalRepository.findByUser(user).stream()
+        List<FlaskRecommendationMessage.ReadBook> rentedBooks = rentalRepository.findByUser(user).stream()
                 .map(Rental::getBook)
-                .map(BookDto::from)
-                .collect(Collectors.toList());
+                .map(book -> {
+                    FlaskRecommendationMessage.ReadBook dto = new FlaskRecommendationMessage.ReadBook();
+                    dto.setTitle(book.getTitle() == null ? "" : book.getTitle());
+                    dto.setAuthor(book.getAuthor() == null ? "" : book.getAuthor());
+                    dto.setGenre(book.getGenre() == null ? "" : book.getGenre());
+                    return dto;
+                }).collect(Collectors.toList());
 
-        log.info("대여한 책 수: {}, 목록: {}", rentedBooks.size(),
-                rentedBooks.stream().map(BookDto::getTitle).toList());
+        log.info("대여한 책 수: {}", rentedBooks.size());
+        log.info("대여한 책 목록: {}", rentedBooks.stream()
+                .map(b -> String.format("[title=%s, author=%s, genre=%s]", b.getTitle(), b.getAuthor(), b.getGenre()))
+                .collect(Collectors.joining(", "))
+        );
 
         // 전체 도서 목록
-        List<BookDto> books = purchasedBooks;
-        books.addAll(rentedBooks);
+        List<FlaskRecommendationMessage.ReadBook> readBooks = new ArrayList<>();
+        readBooks.addAll(purchasedBooks);
+        readBooks.addAll(rentedBooks);
 
-        if (books.isEmpty()) {
-            log.warn("추천할 책이 없음 - userId={}", userId);
+        if (readBooks.isEmpty()) {
             throw new RuntimeException(userId + " 사용자가 대여하거나 구매한 책이 없습니다.");
         }
 
-        log.info("Kafka로 추천 요청 전송 - userId={}, 총 책 수={}", userId, books.size());
+        FlaskRecommendationMessage message = new FlaskRecommendationMessage();
+        message.setUserId(userId);
+        message.setReadBooks(readBooks);
+        message.setBehavior(
+                behaviorRequest.getBooks().stream()
+                        .map(b -> {
+                            FlaskRecommendationMessage.BehaviorBook behavior = new FlaskRecommendationMessage.BehaviorBook();
+                            behavior.setBookId(b.getBookId());
+                            behavior.setClickCount(b.getClickCount());
+                            behavior.setStayTime(b.getStayTime());
+                            return behavior;
+                        })
+                        .collect(Collectors.toList())
+        );
+
+        log.info("Spring Boot 추천 요청 전송 - userId={}, 읽은 책 수={}, 행동 데이터 수={}",
+                userId, readBooks.size(), behaviorRequest.getBooks().size());
+        log.info("읽은 책 전체 목록 (구매+대여): {}", readBooks.stream()
+                .map(b -> String.format("[title=%s, author=%s, genre=%s]", b.getTitle(), b.getAuthor(), b.getGenre()))
+                .collect(Collectors.joining(", "))
+        );
+        log.info("행동 데이터 목록: {}", behaviorRequest.getBooks().stream()
+                .map(b -> String.format("[bookId=%s, clickCount=%s, stayTime=%s]", b.getBookId(), b.getClickCount(), b.getStayTime()))
+                .collect(Collectors.joining(", "))
+        );
 
         // Kafka로 추천 요청 전송
-        kafkaProducerService.sendBooksForRecommendation(userId, books);
-
-        return List.of(); // Kafka 응답은 비동기 처리
+        kafkaProducerService.sendToFlask(message);
     }
 }
