@@ -6,13 +6,13 @@ import java.util.List;
 
 @Getter
 @Setter
-public class BehaviorRequest {
-    private List<BehaviorBook> books;
+public class RecommendRequest {
+    private List<BehaviorBook> userBehaviors;
 
     @Getter
     @Setter
     public static class BehaviorBook {
-        private String bookId;
+        private Long bookId;
         private int clickCount;
         private int stayTime;
     }

@@ -8,15 +8,16 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class FlaskRecommendationMessage {
+public class RecommendRequestMessage {
     private String userId;
     private List<ReadBook> readBooks;
-    private List<BehaviorBook> behavior;
+    private List<UserBehavior> userBehaviors;
 
     @Getter
     @Setter
     @NoArgsConstructor
     public static class ReadBook {
+        private Long bookId;
         private String title;
         private String author;
         private String genre;
@@ -25,8 +26,8 @@ public class FlaskRecommendationMessage {
     @Getter
     @Setter
     @NoArgsConstructor
-    public static class BehaviorBook {
-        private String bookId;
+    public static class UserBehavior {
+        private Long bookId;
         private int clickCount;
         private int stayTime;
     }
