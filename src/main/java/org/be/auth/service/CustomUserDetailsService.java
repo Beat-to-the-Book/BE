@@ -20,11 +20,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         return userRepository.findByUserId(userId)
                 .map(user -> {
-                    System.out.println("✅ User found in DB: " + user.getUserId());
                     return new CustomUserDetails(user);
                 })
                 .orElseThrow(() -> {
-                    System.out.println("❌ User NOT found in DB: " + userId);
                     return new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + userId);
                 });
     }

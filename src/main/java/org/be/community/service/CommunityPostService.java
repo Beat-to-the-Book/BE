@@ -49,11 +49,9 @@ public class CommunityPostService {
     @Transactional
     public CommunityPostResponseDto updatePost(Long id, CommunityPostRequestDto dto, Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        System.out.println("🔍 현재 로그인한 userId: " + userDetails.getUsername());
 
         CommunityPost post = postRepository.findByIdWithUser(id)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
-        System.out.println("📝 글 작성자의 userId: " + post.getUser().getUserId());
 
         if (!post.getUser().getUserId().equals(userDetails.getUsername())) {
             throw new AccessDeniedException("게시글 작성자만 수정할 수 있습니다.");
@@ -67,11 +65,9 @@ public class CommunityPostService {
 
     public void deletePost(Long id, Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        System.out.println("🔍 현재 로그인한 userId: " + userDetails.getUsername());
 
         CommunityPost post = postRepository.findByIdWithUser(id)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
-        System.out.println("📝 글 작성자의 userId: " + post.getUser().getUserId());
 
         if (!post.getUser().getUserId().equals(userDetails.getUsername())) {
             throw new AccessDeniedException("게시글 작성자만 삭제할 수 있습니다.");
