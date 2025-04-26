@@ -107,4 +107,16 @@ public class GroupMemberService {
                 .map(groupMember -> GroupResponseDto.fromEntity(groupMember.getGroup()))
                 .collect(Collectors.toList());
     }
+
+    public boolean isMember(Long groupId, User user) {
+        UserGroup group = groupService.findGroupById(groupId);
+        return groupMemberRepository.findByGroupAndUser(group, user).isPresent();
+    }
+
+    public boolean isLeader(Long groupId, User user) {
+        UserGroup group = groupService.findGroupById(groupId);
+        return groupMemberRepository.findByGroupAndUser(group, user)
+                .filter(m -> m.getRole() == GroupMember.Role.LEADER)
+                .isPresent();
+    }
 }
