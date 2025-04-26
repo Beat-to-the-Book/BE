@@ -20,7 +20,7 @@ public class Book {
     private String author;
 
     @NotBlank
-    @Column(length = 50)
+    @Column(length = 500)
     private String genre;
 
     @NotNull
@@ -44,11 +44,12 @@ public class Book {
 
     public Book() {}
 
-    public Book(String title, String author,  double price,
+    public Book(String title, String author,  double price, String genre,
                 String publisher, String publishDate, String frontCoverImageUrl) {
         this.title = title;
         this.author = author;
         this.price = price;
+        this.genre = genre;
         this.publisher = publisher;
         this.publishDate = publishDate;
         this.frontCoverImageUrl = frontCoverImageUrl;

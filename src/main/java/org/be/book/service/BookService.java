@@ -1,5 +1,6 @@
 package org.be.book.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.be.book.dto.AddBookRequest;
 import org.be.book.model.Book;
 import org.be.book.repository.BookRepository;
@@ -19,6 +20,12 @@ public class BookService {
     // 모든 도서 조회
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
+    }
+
+    // 한 권 호출
+    public Book getBookById(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("해당 도서를 찾을 수 없습니다."));
     }
 
     // 책 제목에 키워드가 포함된 도서 조회

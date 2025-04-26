@@ -31,7 +31,13 @@ public class BookController {
         return bookService.getAllBooks();
     }
 
-    // 특정 도서 조회
+    // 도서 한 권 조회
+    @GetMapping("/{id}")
+    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
+        return ResponseEntity.ok(bookService.getBookById(id));
+    }
+
+    // 도서 검색
     @Operation(summary = "도서 검색", description = "도서 제목에 포함된 키워드로 도서를 검색합니다.")
     @GetMapping("/search")
     public ResponseEntity<List<Book>> searchBooks(
