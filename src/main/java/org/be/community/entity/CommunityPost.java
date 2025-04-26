@@ -3,6 +3,7 @@ package org.be.community.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.be.auth.model.User;
+import org.be.group.entity.UserGroup;
 
 import java.time.LocalDateTime;
 
@@ -30,6 +31,10 @@ public class CommunityPost {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private UserGroup group;
 
     @PrePersist
     protected void onCreate() {
