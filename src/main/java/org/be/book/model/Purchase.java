@@ -1,6 +1,5 @@
 package org.be.book.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.be.auth.model.User;
 
