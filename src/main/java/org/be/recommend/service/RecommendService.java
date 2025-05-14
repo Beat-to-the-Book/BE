@@ -96,7 +96,7 @@ public class RecommendService {
         readBooks.addAll(rentedBooks);
 
         if (readBooks.isEmpty()) {
-            throw new RuntimeException(userId + " 사용자가 대여하거나 구매한 책이 없습니다.");
+            log.warn("사용자 {}가 대여하거나 구매한 책이 없습니다.", userId);
         }
 
         RecommendRequestMessage message = new RecommendRequestMessage();
