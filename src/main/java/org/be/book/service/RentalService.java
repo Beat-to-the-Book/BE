@@ -4,6 +4,7 @@ import org.be.auth.model.User;
 import org.be.auth.repository.UserRepository;
 import org.be.book.dto.AddRentalRequest;
 import org.be.book.model.Book;
+import org.be.book.model.Purchase;
 import org.be.book.model.Rental;
 import org.be.book.repository.BookRepository;
 import org.be.book.repository.RentalRepository;

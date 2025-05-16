@@ -1,11 +1,7 @@
 package org.be.book.controller;
 
 import org.be.book.dto.AddPurchaseRequest;
-<<<<<<< HEAD
 import org.be.book.model.Book;
-=======
-import org.be.book.dto.HistoryPurchaseResponse;
->>>>>>> main
 import org.be.book.model.Purchase;
 import org.be.book.service.PurchaseService;
 import org.springframework.http.ResponseEntity;
