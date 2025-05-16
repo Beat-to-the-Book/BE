@@ -18,6 +18,13 @@ FROM openjdk:17-jdk-slim
 
 WORKDIR /app
 
+# 크롬 및 크롬드라이버 설치
+RUN apt-get update && \
+    apt-get install -y wget unzip curl gnupg ca-certificates \
+                       chromium chromium-driver && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # 빌드된 JAR 파일을 실행할 환경에 복사
 COPY --from=build /app/build/libs/*.jar app.jar
 

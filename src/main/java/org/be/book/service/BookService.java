@@ -1,5 +1,6 @@
 package org.be.book.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.be.book.dto.AddBookRequest;
 import org.be.book.model.Book;
 import org.be.book.repository.BookRepository;
@@ -21,18 +22,33 @@ public class BookService {
         return bookRepository.findAll();
     }
 
+    // 한 권 호출
+    public Book getBookById(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("해당 도서를 찾을 수 없습니다."));
+    }
+
     // 책 제목에 키워드가 포함된 도서 조회
     public List<Book> searchBooksByTitle(String keyword) {
         return bookRepository.findAllByTitleContaining(keyword);
     }
 
     // 관리자가 직접 도서 추가
-    public Book saveBook(AddBookRequest addBookRequest) {
+    public Book saveBook(AddBookRequest request) {
+        boolean exists = bookRepository.existsByTitleAndAuthor(request.getTitle(), request.getAuthor());
+        if (exists) {
+            return null;
+        }
+
         Book book = new Book();
-        book.setTitle(addBookRequest.getTitle());
-        book.setAuthor(addBookRequest.getAuthor());
-        book.setGenre(addBookRequest.getGenre());
-        book.setPrice(addBookRequest.getPrice());
+        book.setTitle(request.getTitle());
+        book.setAuthor(request.getAuthor());
+        book.setGenre(request.getGenre());
+        book.setPrice(request.getPrice());
+        book.setPublisher(request.getPublisher());
+        book.setPublishDate(request.getPublishedDate());
+        book.setLeftCoverImageUrl(request.getLeftCoverImageUrl());
+        book.setFrontCoverImageUrl(request.getFrontCoverImageUrl());
 
         return bookRepository.save(book);
     }

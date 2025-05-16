@@ -1,31 +1,36 @@
 package org.be.recommend.service;
 
-import org.be.book.model.Book;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.be.recommend.dto.RecommendRequestMessage;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class KafkaProducerService {
-    private final KafkaTemplate<String, Map<String, String>> kafkaTemplate;
-    private final String TOPIC = "recommendation_topic";
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
-    public KafkaProducerService(KafkaTemplate<String, Map<String, String>> kafkaTemplate) {
+    private static final Logger log = LoggerFactory.getLogger(KafkaProducerService.class);
+
+    private final String TOPIC = "flask_recommendation_topic"; // Flask가 구독하는 토픽 이름
+
+    public KafkaProducerService(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
+        this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // null 필드 제거
     }
 
-    public void sendBooksForRecommendation(String userId, List<Book> books) {
-        for (Book book : books) {
-            Map<String, String> bookData = new HashMap<>();
-            bookData.put("userId", userId);
-            bookData.put("title", book.getTitle());
-            bookData.put("author", book.getAuthor());
-            bookData.put("genre", book.getGenre());
+    public void sendToFlask(RecommendRequestMessage message) {
+        try {
+            String jsonMessage = objectMapper.writeValueAsString(message);
+            log.info("Kafka 전송 데이터(JSON): {}", jsonMessage);
 
-            kafkaTemplate.send(TOPIC, bookData);
+            kafkaTemplate.send(TOPIC, jsonMessage).get(); // 변환된 JSON 문자열을 Kafka로 전송
+        } catch (Exception e) {
+            throw new RuntimeException("Kafka 메시지 전송 실패: " + e.getMessage(), e);
         }
     }
 }

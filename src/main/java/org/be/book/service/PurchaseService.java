@@ -3,6 +3,7 @@ package org.be.book.service;
 import org.be.auth.model.User;
 import org.be.auth.repository.UserRepository;
 import org.be.book.dto.AddPurchaseRequest;
+import org.be.book.dto.HistoryPurchaseResponse;
 import org.be.book.model.Book;
 import org.be.book.model.Purchase;
 import org.be.book.repository.BookRepository;
@@ -34,7 +35,7 @@ public class PurchaseService {
         return purchases.stream()
                 .map(Purchase::getBook)
                 .collect(Collectors.toList());
-    }:
+    }
 
     public Purchase addPurchase(AddPurchaseRequest addPurchaseRequest) {
         User user = userRepository.findByUserId(addPurchaseRequest.getUserId())

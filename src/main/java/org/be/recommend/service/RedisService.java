@@ -14,12 +14,12 @@ public class RedisService {
 
     private static final String VIEW_HISTORY_KEY = "view_history:";
 
-    public void saveViewedBook(Long userId, Long bookId) {
+    public void saveViewedBook(String userId, Long bookId) {
         redisTemplate.opsForList().leftPush(VIEW_HISTORY_KEY + userId, bookId.toString());
         redisTemplate.expire(VIEW_HISTORY_KEY + userId, Duration.ofDays(7)); // 7일 유지
     }
 
-    public List<String> getViewedBooks(Long userId) {
+    public List<String> getViewedBooks(String userId) {
         return redisTemplate.opsForList().range(VIEW_HISTORY_KEY + userId, 0, -1);
     }
 }

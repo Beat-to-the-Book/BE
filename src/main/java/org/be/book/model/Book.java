@@ -20,20 +20,39 @@ public class Book {
     private String author;
 
     @NotBlank
-    @Column(length = 50)
+    @Column(length = 500)
     private String genre;
 
     @NotNull
     @Column(nullable = false)
     private Double price;
 
+    @Column(length = 100)
+    private String publisher;
+
+    @Column(name = "publish_date")
+    private String publishDate;
+
+    @Column(length = 500)
+    private String leftCoverImageUrl;
+
+    @Column(length = 500)
+    private String frontCoverImageUrl;
+
+    @Column(length = 500)
+    private String backCoverImageUrl;
+
     public Book() {}
 
-    public Book(String title, String author, String genre, Double price) {
+    public Book(String title, String author,  double price, String genre,
+                String publisher, String publishDate, String frontCoverImageUrl) {
         this.title = title;
         this.author = author;
-        this.genre = genre;
         this.price = price;
+        this.genre = genre;
+        this.publisher = publisher;
+        this.publishDate = publishDate;
+        this.frontCoverImageUrl = frontCoverImageUrl;
     }
 
     public Long getId() { return id; }
@@ -50,4 +69,19 @@ public class Book {
 
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
+
+    public String getPublisher() { return publisher; }
+    public void setPublisher(String publisher) { this.publisher = publisher; }
+
+    public String getPublishDate() { return publishDate; }
+    public void setPublishDate(String publishDate) { this.publishDate = publishDate; }
+
+    public String getLeftCoverImageUrl() { return leftCoverImageUrl; }
+    public void setLeftCoverImageUrl(String leftCoverImageUrl) { this.leftCoverImageUrl = leftCoverImageUrl; }
+
+    public String getFrontCoverImageUrl() { return frontCoverImageUrl; }
+    public void setFrontCoverImageUrl(String frontCoverImageUrl) { this.frontCoverImageUrl = frontCoverImageUrl; }
+
+    public String getBackCoverImageUrl() { return backCoverImageUrl; }
+    public void setBackCoverImageUrl(String backCoverImageUrl) { this.backCoverImageUrl = backCoverImageUrl; }
 }
