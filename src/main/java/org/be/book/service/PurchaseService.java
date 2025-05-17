@@ -3,7 +3,6 @@ package org.be.book.service;
 import org.be.auth.model.User;
 import org.be.auth.repository.UserRepository;
 import org.be.book.dto.AddPurchaseRequest;
-import org.be.book.dto.HistoryPurchaseResponse;
 import org.be.book.model.Book;
 import org.be.book.model.Purchase;
 import org.be.book.repository.BookRepository;
@@ -26,14 +25,14 @@ public class PurchaseService {
         this.purchaseRepository = purchaseRepository;
     }
 
-    public List<HistoryPurchaseResponse> getPurchaseHistory(String userId) {
+    public List<Book> getPurchaseHistory(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
 
         List<Purchase> purchases = purchaseRepository.findByUser(user);
 
         return purchases.stream()
-                .map(HistoryPurchaseResponse::new)
+                .map(Purchase::getBook)
                 .collect(Collectors.toList());
     }
 

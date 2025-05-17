@@ -4,11 +4,13 @@ import org.be.auth.model.User;
 import org.be.auth.repository.UserRepository;
 import org.be.book.dto.AddRentalRequest;
 import org.be.book.model.Book;
+import org.be.book.model.Purchase;
 import org.be.book.model.Rental;
 import org.be.book.repository.BookRepository;
 import org.be.book.repository.RentalRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RentalService {
@@ -24,11 +26,15 @@ public class RentalService {
         this.rentalRepository = rentalRepository;
     }
 
-    public List<Rental> getRentalHistory(String userId) {
+    public List<Book> getRentalHistory(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
 
-        return rentalRepository.findByUser(user);
+        List<Rental> rentals = rentalRepository.findByUser(user);
+
+        return rentals.stream()
+                .map(Rental::getBook)
+                .collect(Collectors.toList());
     }
 
     public Rental addRental(AddRentalRequest addRentalRequest) {
