@@ -1,6 +1,5 @@
 package org.be.auth.service;
 
-
 import org.be.auth.config.JwtTokenProvider;
 import org.be.auth.dto.LoginRequest;
 import org.be.auth.dto.RegisterRequest;
@@ -25,7 +24,7 @@ public class AuthService {
                 this.jwtTokenProvider = jwtTokenProvider;
         }
 
-        // 🔹 회원가입 로직
+        // 회원가입 로직
         public void register(RegisterRequest request) {
                 if (userRepository.existsByUserId(request.getUserId())) {
                         throw new RuntimeException("이미 존재하는 아이디입니다.");
@@ -39,7 +38,7 @@ public class AuthService {
                 userRepository.save(user);
         }
 
-        // 🔹 로그인 로직 (JWT 발급)
+        // 로그인 로직 (JWT 발급)
         public TokenResponse login(LoginRequest request) {
                 Optional<User> userOptional = userRepository.findByUserId(request.getUserId());
 
@@ -56,7 +55,7 @@ public class AuthService {
                 return new TokenResponse(token);
         }
 
-        // 🔹 토큰 검증
+        // 토큰 검증
         public boolean validateToken(String token) {
                 return jwtTokenProvider.validateToken(token);
         }
