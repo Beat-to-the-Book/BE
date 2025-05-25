@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/book/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
                         .requestMatchers("/api/groups").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/community").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/community/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()

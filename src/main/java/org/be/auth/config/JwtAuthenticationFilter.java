@@ -2,6 +2,7 @@ package org.be.auth.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.be.auth.service.CustomUserDetailsService;
@@ -26,27 +27,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException{
-        String token = getTokenFromRequest(request);
-        if(StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+                                    FilterChain filterChain) throws ServletException, IOException {
+
+        String token = getTokenFromCookie(request);
+
+        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
             String userId = jwtTokenProvider.getUserIdFromToken(token);
-            try{
+            try {
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(userId);
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            } catch (UsernameNotFoundException e){
-                logger.error("Username not found : " + userId, e);
+            } catch (UsernameNotFoundException e) {
+                logger.error("Username not found: " + userId, e);
             }
         }
+
         filterChain.doFilter(request, response);
     }
-    private String getTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+
+    private String getTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null) return null;
+
+        for (Cookie cookie : request.getCookies()) {
+            if ("token".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
         }
         return null;
     }
