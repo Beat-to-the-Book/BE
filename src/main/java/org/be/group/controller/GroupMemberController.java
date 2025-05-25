@@ -3,6 +3,7 @@ package org.be.group.controller;
 import lombok.RequiredArgsConstructor;
 import org.be.group.dto.GroupMemberResponseDto;
 import org.be.group.dto.GroupResponseDto;
+import org.be.group.dto.GroupRoleResponseDto;
 import org.be.group.service.GroupMemberService;
 import org.be.auth.service.CustomUserDetails;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +53,22 @@ public class GroupMemberController {
                                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
         groupMemberService.transferLeadership(groupId, userDetails.getUser(), userId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/role")
+    public ResponseEntity<GroupRoleResponseDto> getMyGroupRole(@PathVariable Long groupId,
+                                                               @AuthenticationPrincipal CustomUserDetails userDetails) {
+        boolean isMember = groupMemberService.isMember(groupId, userDetails.getUser());
+        boolean isLeader = groupMemberService.isLeader(groupId, userDetails.getUser());
+
+        GroupRoleResponseDto response = GroupRoleResponseDto.builder()
+                .groupId(groupId)
+                .userId(userDetails.getUser().getUserId())
+                .isMember(isMember)
+                .isLeader(isLeader)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/my")
