@@ -49,10 +49,9 @@ public class RecommendService {
         return redisTemplate.opsForValue().get(redisKey);
     }
 
-    public void recommendBooks(String userId, RecommendRequest recommendRequest) {
-        // JWT 토큰에서 사용자 추출
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
+    public void recommendBooks(User user, RecommendRequest recommendRequest) {
+
+        String userId = user.getUserId();
 
         // 사용자의 구매 도서 조회
         List<RecommendRequestMessage.ReadBook> purchasedBooks = purchaseRepository.findByUser(user).stream()
@@ -110,8 +109,7 @@ public class RecommendService {
                             behavior.setClickCount(b.getClickCount());
                             behavior.setStayTime(b.getStayTime());
                             return behavior;
-                        })
-                        .collect(Collectors.toList())
+                        }).collect(Collectors.toList())
         );
 
         log.info("Spring Boot 추천 요청 전송 - userId={}, 읽은 책 수={}, 행동 데이터 수={}",
