@@ -28,7 +28,7 @@ public class RecommendRequestMessage {
     @NoArgsConstructor
     public static class UserBehavior {
         private Long bookId;
-        private int clickCount;
-        private int stayTime;
+        private int stayTime; // seconds
+        private int scrollDepth; // percentage
     }
 }

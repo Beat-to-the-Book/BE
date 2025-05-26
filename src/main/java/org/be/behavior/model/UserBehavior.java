@@ -5,10 +5,11 @@ import lombok.*;
 import org.be.auth.model.User;
 
 @Entity
-@Getter @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "user_behavior")
 public class UserBehavior {
 
     @Id
