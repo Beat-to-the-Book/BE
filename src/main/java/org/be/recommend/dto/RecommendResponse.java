@@ -5,15 +5,11 @@ import lombok.*;
 import java.util.List;
 
 // 도서 정보 전달을 위한 dto
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 public class RecommendResponse {
     private List<RecommendBook> recommendedBooks;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
+    @Data
     public static class RecommendBook {
         private Long bookId;
         private String title;
