@@ -70,10 +70,4 @@ public class GroupMemberController {
 
         return ResponseEntity.ok(response);
     }
-
-    @GetMapping("/my")
-    public ResponseEntity<List<GroupResponseDto>> getMyGroups(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        List<GroupResponseDto> myGroups = groupMemberService.getMyGroups(userDetails.getUser());
-        return ResponseEntity.ok(myGroups);
-    }
 }
