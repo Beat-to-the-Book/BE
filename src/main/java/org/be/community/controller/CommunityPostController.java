@@ -6,6 +6,7 @@ import org.be.community.dto.CommunityPostRequestDto;
 import org.be.community.dto.CommunityPostResponseDto;
 import org.be.community.service.CommunityPostService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,9 @@ public class CommunityPostController {
     // 전체 게시글 조회 (모든 커뮤니티의)
     @GetMapping
     public List<CommunityPostResponseDto> getAllPosts(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            throw new AccessDeniedException("로그인이 필요합니다.");
+        }
         return postService.getAllPosts(userDetails.getUser());
     }
 
