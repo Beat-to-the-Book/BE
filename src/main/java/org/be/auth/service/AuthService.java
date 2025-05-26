@@ -3,7 +3,6 @@ package org.be.auth.service;
 import org.be.auth.config.JwtTokenProvider;
 import org.be.auth.dto.LoginRequest;
 import org.be.auth.dto.RegisterRequest;
-import org.be.auth.dto.TokenResponse;
 import org.be.auth.model.User;
 import org.be.auth.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,7 +17,9 @@ public class AuthService {
         private final PasswordEncoder passwordEncoder;
         private final JwtTokenProvider jwtTokenProvider;
 
-        public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
+        public AuthService(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           JwtTokenProvider jwtTokenProvider) {
                 this.userRepository = userRepository;
                 this.passwordEncoder = passwordEncoder;
                 this.jwtTokenProvider = jwtTokenProvider;
@@ -34,12 +35,18 @@ public class AuthService {
                 }
 
                 String encodedPassword = passwordEncoder.encode(request.getPassword());
-                User user = new User(request.getUserId(), request.getUsername(), request.getEmail(), encodedPassword, "ROLE_USER");
+                User user = new User(
+                        request.getUserId(),
+                        request.getUsername(),
+                        request.getEmail(),
+                        encodedPassword,
+                        "ROLE_USER"
+                );
                 userRepository.save(user);
         }
 
         // 로그인 로직 (JWT 발급)
-        public TokenResponse login(LoginRequest request) {
+        public String login(LoginRequest request) {
                 Optional<User> userOptional = userRepository.findByUserId(request.getUserId());
 
                 if (userOptional.isEmpty()) {
@@ -51,8 +58,7 @@ public class AuthService {
                         throw new RuntimeException("비밀번호가 일치하지 않습니다.");
                 }
 
-                String token = jwtTokenProvider.generateToken(user.getUserId());
-                return new TokenResponse(token);
+                return jwtTokenProvider.generateToken(user.getUserId());
         }
 
         // 토큰 검증
