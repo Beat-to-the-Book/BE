@@ -1,7 +1,6 @@
 package org.be.recommend.controller;
 
 import jakarta.transaction.Transactional;
-import org.be.recommend.dto.RecommendRequest;
 import org.be.recommend.dto.RecommendResponse;
 import org.be.recommend.service.RecommendService;
 import org.slf4j.Logger;
@@ -25,10 +24,7 @@ public class RecommendController {
     // 클라이언트가 POST로 추천 요청 보내는 엔드포인트
     @PostMapping
     @Transactional
-    public ResponseEntity<?> recommendBooks(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody RecommendRequest recommendRequest) {
-
+    public ResponseEntity<?> recommendBooks(@AuthenticationPrincipal UserDetails userDetails) {
         String userId = userDetails.getUsername();
         RecommendResponse cachedRecommendations = recommendService.checkCache(userId);
 
@@ -40,9 +36,8 @@ public class RecommendController {
             return ResponseEntity.ok(cachedRecommendations);
         }
 
-        // Redis에 없으면 Kafka로 추천 요청을 보낸다
-        log.info("추천 결과가 비어 있음. 추천 요청 중 - userId={}", userId);
-        recommendService.recommendBooks(userId, recommendRequest);
+        // Redis에 추천 결과가 없으면 Kafka로 추천 요청을 보낸다
+        recommendService.recommendBooks(userId);
 
         // 추천 생성 중이니까 "추천 생성 요청 완료" 메시지를 응답
         // 추천 결과가 아직 생성되지 않았음을 알려줌

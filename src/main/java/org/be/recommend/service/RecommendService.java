@@ -6,7 +6,6 @@ import org.be.book.model.Purchase;
 import org.be.book.model.Rental;
 import org.be.book.repository.PurchaseRepository;
 import org.be.book.repository.RentalRepository;
-import org.be.recommend.dto.RecommendRequest;
 import org.be.recommend.dto.RecommendResponse;
 import org.be.recommend.dto.RecommendRequestMessage;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -90,7 +89,7 @@ public class RecommendService {
                 .collect(Collectors.joining(", "))
         );
 
-        // 전체 도서 목록
+        // 전체 도서 목록 리스트 생성
         List<RecommendRequestMessage.ReadBook> readBooks = new ArrayList<>();
         readBooks.addAll(purchasedBooks);
         readBooks.addAll(rentedBooks);
