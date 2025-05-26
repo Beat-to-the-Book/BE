@@ -2,11 +2,11 @@ package org.be.recommend.service;
 
 import org.be.auth.model.User;
 import org.be.auth.repository.UserRepository;
+import org.be.behavior.repository.UserBehaviorRepository;
 import org.be.book.model.Purchase;
 import org.be.book.model.Rental;
 import org.be.book.repository.PurchaseRepository;
 import org.be.book.repository.RentalRepository;
-import org.be.recommend.dto.RecommendRequest;
 import org.be.recommend.dto.RecommendResponse;
 import org.be.recommend.dto.RecommendRequestMessage;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -24,6 +24,7 @@ public class RecommendService {
     private final UserRepository userRepository;
     private final PurchaseRepository purchaseRepository;
     private final RentalRepository rentalRepository;
+    private final UserBehaviorRepository userBehaviorRepository;
     private final KafkaProducerService kafkaProducerService;
     private final RedisTemplate<String, RecommendResponse> redisTemplate;
     private static final String REDIS_KEY_PREFIX = "recommend:user:";
@@ -33,11 +34,13 @@ public class RecommendService {
     public RecommendService(UserRepository userRepository,
                             PurchaseRepository purchaseRepository,
                             RentalRepository rentalRepository,
+                            UserBehaviorRepository userBehaviorRepository,
                             KafkaProducerService kafkaProducerService,
                             RedisTemplate<String, RecommendResponse> redisTemplate) {
         this.userRepository = userRepository;
         this.purchaseRepository = purchaseRepository;
         this.rentalRepository = rentalRepository;
+        this.userBehaviorRepository = userBehaviorRepository;
         this.kafkaProducerService = kafkaProducerService;
         this.redisTemplate = redisTemplate;
     }
@@ -49,7 +52,7 @@ public class RecommendService {
         return redisTemplate.opsForValue().get(redisKey);
     }
 
-    public void recommendBooks(User user, RecommendRequest recommendRequest) {
+    public void recommendBooks(User user) {
 
         String userId = user.getUserId();
 
@@ -89,7 +92,7 @@ public class RecommendService {
                 .collect(Collectors.joining(", "))
         );
 
-        // 전체 도서 목록
+        // 전체 도서 목록 리스트 생성
         List<RecommendRequestMessage.ReadBook> readBooks = new ArrayList<>();
         readBooks.addAll(purchasedBooks);
         readBooks.addAll(rentedBooks);
@@ -98,28 +101,30 @@ public class RecommendService {
             log.warn("사용자 {}가 대여하거나 구매한 책이 없습니다.", userId);
         }
 
+        // 사용자 행동 데이터 조회
+        List<RecommendRequestMessage.UserBehavior> behaviors = userBehaviorRepository.findByUser(user).stream()
+                .map(behavior -> {
+                    RecommendRequestMessage.UserBehavior dto = new RecommendRequestMessage.UserBehavior();
+                    dto.setBookId(behavior.getBookId());
+                    dto.setStayTime(behavior.getStayTime());
+                    dto.setScrollDepth(behavior.getScrollDepth());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
         RecommendRequestMessage message = new RecommendRequestMessage();
         message.setUserId(userId);
         message.setReadBooks(readBooks);
-        message.setUserBehaviors(
-                recommendRequest.getUserBehaviors().stream()
-                        .map(b -> {
-                            RecommendRequestMessage.UserBehavior behavior = new RecommendRequestMessage.UserBehavior();
-                            behavior.setBookId(b.getBookId());
-                            behavior.setClickCount(b.getClickCount());
-                            behavior.setStayTime(b.getStayTime());
-                            return behavior;
-                        }).collect(Collectors.toList())
-        );
+        message.setUserBehaviors(behaviors);
 
         log.info("Spring Boot 추천 요청 전송 - userId={}, 읽은 책 수={}, 행동 데이터 수={}",
-                userId, readBooks.size(), recommendRequest.getUserBehaviors().size());
+                userId, readBooks.size(), behaviors.size());
         log.info("읽은 책 전체 목록 (구매+대여): {}", readBooks.stream()
                 .map(b -> String.format("[title=%s, author=%s, genre=%s]", b.getTitle(), b.getAuthor(), b.getGenre()))
                 .collect(Collectors.joining(", "))
         );
-        log.info("행동 데이터 목록: {}", recommendRequest.getUserBehaviors().stream()
-                .map(b -> String.format("[bookId=%s, clickCount=%s, stayTime=%s]", b.getBookId(), b.getClickCount(), b.getStayTime()))
+        log.info("행동 데이터 목록: {}", behaviors.stream()
+                .map(b -> String.format("[bookId=%s, stayTime=%s, scrollDepth=%s]", b.getBookId(), b.getStayTime(), b.getScrollDepth()))
                 .collect(Collectors.joining(", "))
         );
 

@@ -3,14 +3,12 @@ package org.be.recommend.controller;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.be.auth.service.CustomUserDetails;
-import org.be.recommend.dto.RecommendRequest;
 import org.be.recommend.dto.RecommendResponse;
 import org.be.recommend.service.RecommendService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,8 +22,7 @@ public class RecommendController {
     // 클라이언트가 POST로 추천 요청 보내는 엔드포인트
     @PostMapping
     @Transactional
-    public ResponseEntity<?> recommendBooks(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                            @RequestBody RecommendRequest recommendRequest) {
+    public ResponseEntity<?> recommendBooks(@AuthenticationPrincipal CustomUserDetails userDetails) {
         String userId = userDetails.getUser().getUserId();
 
         RecommendResponse cachedRecommendations = recommendService.checkCache(userId);
@@ -39,9 +36,9 @@ public class RecommendController {
             return ResponseEntity.ok(cachedRecommendations);
         }
 
-        // Redis에 없으면 Kafka로 추천 요청을 보낸다
+        // Redis에 추천 결과가 없으면 Kafka로 추천 요청을 보낸다
         log.info("추천 결과가 비어 있음. 추천 요청 중 - userId={}", userId);
-        recommendService.recommendBooks(userDetails.getUser(), recommendRequest);
+        recommendService.recommendBooks(userDetails.getUser());
 
         // 추천 생성 중이니까 "추천 생성 요청 완료" 메시지를 응답
         // 추천 결과가 아직 생성되지 않았음을 알려줌
