@@ -52,10 +52,9 @@ public class RecommendService {
         return redisTemplate.opsForValue().get(redisKey);
     }
 
-    public void recommendBooks(String userId, RecommendRequest recommendRequest) {
-        // JWT 토큰에서 사용자 추출
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("사용자가 존재하지 않습니다."));
+    public void recommendBooks(User user) {
+
+        String userId = user.getUserId();
 
         // 사용자의 구매 도서 조회
         List<RecommendRequestMessage.ReadBook> purchasedBooks = purchaseRepository.findByUser(user).stream()

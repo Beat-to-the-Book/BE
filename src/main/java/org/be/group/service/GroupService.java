@@ -24,10 +24,7 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
 
-    public GroupResponseDto createGroup(GroupCreateRequestDto requestDto, Authentication authentication) {
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        User user = userDetails.getUser();
-
+    public GroupResponseDto createGroup(GroupCreateRequestDto requestDto, User user) {
         if (groupRepository.existsByName(requestDto.getName())) {
             throw new IllegalArgumentException("이미 존재하는 그룹 이름입니다.");
         }
@@ -49,21 +46,10 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public List<GroupResponseDto> getAllGroups() {
+    public List<GroupResponseDto> getAllGroups(User user) {
+        // role에 따라 필터링 될 수도 있는데 일단은 패스
         return groupRepository.findAll()
                 .stream()
-                .map(GroupResponseDto::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<GroupResponseDto> getMyGroups(Authentication authentication) {
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        User user = userDetails.getUser();
-
-        return groupMemberRepository.findByUser(user)
-                .stream()
-                .map(GroupMember::getGroup)
                 .map(GroupResponseDto::fromEntity)
                 .collect(Collectors.toList());
     }
