@@ -16,6 +16,8 @@ public class RecommendResponse {
         private String author;
         private String coverImageUrl;
 
+        public RecommendBook() {}
+
         public RecommendBook(Long bookId, String title, String author, String coverImageUrl) {
             this.bookId = bookId;
             this.title = title;
