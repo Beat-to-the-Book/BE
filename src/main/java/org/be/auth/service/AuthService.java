@@ -3,6 +3,7 @@ package org.be.auth.service;
 import org.be.auth.config.JwtTokenProvider;
 import org.be.auth.dto.LoginRequest;
 import org.be.auth.dto.RegisterRequest;
+import org.be.auth.dto.TokenResponse;
 import org.be.auth.model.User;
 import org.be.auth.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,7 +47,7 @@ public class AuthService {
         }
 
         // 로그인 로직 (JWT 발급)
-        public String login(LoginRequest request) {
+        public TokenResponse login(LoginRequest request) {
                 Optional<User> userOptional = userRepository.findByUserId(request.getUserId());
 
                 if (userOptional.isEmpty()) {
@@ -58,7 +59,8 @@ public class AuthService {
                         throw new RuntimeException("비밀번호가 일치하지 않습니다.");
                 }
 
-                return jwtTokenProvider.generateToken(user.getUserId());
+                String token = jwtTokenProvider.generateToken(user.getUserId());
+                return new TokenResponse(token);
         }
 
         // 토큰 검증
