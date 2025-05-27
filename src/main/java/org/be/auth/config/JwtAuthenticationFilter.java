@@ -2,7 +2,6 @@ package org.be.auth.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.be.auth.service.CustomUserDetailsService;
@@ -14,7 +13,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
@@ -28,32 +26,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-
-        String token = getTokenFromCookie(request);
-
-        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+                                    FilterChain filterChain) throws ServletException, IOException{
+        String token = getTokenFromRequest(request);
+        if(StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
             String userId = jwtTokenProvider.getUserIdFromToken(token);
-            try {
+            try{
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(userId);
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (UsernameNotFoundException e) {
-                logger.error("Username not found: " + userId, e);
+
+            } catch (UsernameNotFoundException e){
+                logger.error("Username not found : " + userId, e);
             }
         }
-
         filterChain.doFilter(request, response);
     }
-
-    private String getTokenFromCookie(HttpServletRequest request) {
-        if (request.getCookies() == null) return null;
-        return Arrays.stream(request.getCookies())
-                .filter(cookie -> "token".equals(cookie.getName()))
-                .map(Cookie::getValue)
-                .findFirst()
-                .orElse(null);
+    private String getTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

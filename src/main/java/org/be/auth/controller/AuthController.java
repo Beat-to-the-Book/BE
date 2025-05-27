@@ -8,7 +8,6 @@ import org.be.auth.model.User;
 import org.be.auth.service.AuthService;
 import org.be.auth.service.CustomUserDetails;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -27,34 +26,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<Void>> login(@Valid @RequestBody LoginRequest request,
-                                                   HttpServletResponse response) {
-        String token = authService.login(request);
-
-        ResponseCookie cookie = ResponseCookie.from("token", token)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(7 * 24 * 60 * 60)
-                .sameSite("None")
-                .build();
-
-        response.setHeader("Set-Cookie", cookie.toString());
-
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "로그인 성공"));
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(HttpServletResponse response) {
-        ResponseCookie deleteCookie = ResponseCookie.from("token", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-
-        response.setHeader("Set-Cookie", deleteCookie.toString());
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "로그아웃 성공"));
+    public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody LoginRequest request) {
+        TokenResponse tokenResponse = authService.login(request);
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "로그인 성공", tokenResponse));
     }
 
     @GetMapping("/me")
