@@ -22,9 +22,7 @@ public class CommunityPostController {
     // 전체 게시글 조회 (모든 커뮤니티의)
     @GetMapping
     public List<CommunityPostResponseDto> getAllPosts(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
-            throw new AccessDeniedException("로그인이 필요합니다.");
-        }
+        validateAuth(userDetails);
         return postService.getAllPosts(userDetails.getUser());
     }
 
@@ -32,6 +30,7 @@ public class CommunityPostController {
     @GetMapping("/{groupId}/posts")
     public ResponseEntity<List<CommunityPostResponseDto>> getGroupPosts(@PathVariable Long groupId,
                                                                         @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateAuth(userDetails);
         return ResponseEntity.ok(postService.getPostsByGroup(groupId, userDetails.getUser()));
     }
 
@@ -40,6 +39,7 @@ public class CommunityPostController {
     public ResponseEntity<CommunityPostResponseDto> getPost(@PathVariable Long groupId,
                                                             @PathVariable Long postId,
                                                             @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateAuth(userDetails);
         return ResponseEntity.ok(postService.getPost(groupId, postId, userDetails.getUser()));
     }
 
@@ -48,6 +48,7 @@ public class CommunityPostController {
     public ResponseEntity<CommunityPostResponseDto> createPost(@PathVariable Long groupId,
                                                                @RequestBody CommunityPostRequestDto requestDto,
                                                                @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateAuth(userDetails);
         return ResponseEntity.ok(postService.createPost(groupId, requestDto, userDetails.getUser()));
     }
 
@@ -57,6 +58,7 @@ public class CommunityPostController {
                                                                @PathVariable Long postId,
                                                                @RequestBody CommunityPostRequestDto requestDto,
                                                                @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateAuth(userDetails);
         return ResponseEntity.ok(postService.updatePost(groupId, postId, requestDto, userDetails.getUser()));
     }
 
@@ -65,7 +67,14 @@ public class CommunityPostController {
     public ResponseEntity<Void> deletePost(@PathVariable Long groupId,
                                            @PathVariable Long postId,
                                            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateAuth(userDetails);
         postService.deletePost(groupId, postId, userDetails.getUser());
         return ResponseEntity.ok().build();
+    }
+
+    private void validateAuth(CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            throw new AccessDeniedException("인증된 사용자만 사용할 수 있는 기능입니다.");
+        }
     }
 }
