@@ -2,11 +2,11 @@ package org.be.group.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.be.group.dto.GroupMemberResponseDto;
-import org.be.group.dto.GroupResponseDto;
 import org.be.group.dto.GroupRoleResponseDto;
 import org.be.group.service.GroupMemberService;
 import org.be.auth.service.CustomUserDetails;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +22,7 @@ public class GroupMemberController {
     @PostMapping("/join")
     public ResponseEntity<Void> joinGroup(@PathVariable Long groupId,
                                           @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateUser(userDetails);
         groupMemberService.joinGroup(groupId, userDetails.getUser());
         return ResponseEntity.ok().build();
     }
@@ -29,12 +30,20 @@ public class GroupMemberController {
     @DeleteMapping("/leave")
     public ResponseEntity<Void> leaveGroup(@PathVariable Long groupId,
                                            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateUser(userDetails);
         groupMemberService.leaveGroup(groupId, userDetails.getUser());
         return ResponseEntity.ok().build();
     }
 
     @GetMapping
-    public ResponseEntity<List<GroupMemberResponseDto>> getGroupMembers(@PathVariable Long groupId) {
+    public ResponseEntity<List<GroupMemberResponseDto>> getGroupMembers(@PathVariable Long groupId,
+                                                                        @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateUser(userDetails);
+
+        if (!groupMemberService.isMember(groupId, userDetails.getUser())) {
+            throw new AccessDeniedException("해당 그룹에 가입한 사용자만 멤버 목록을 조회할 수 있습니다.");
+        }
+
         List<GroupMemberResponseDto> members = groupMemberService.getGroupMembers(groupId);
         return ResponseEntity.ok(members);
     }
@@ -43,6 +52,7 @@ public class GroupMemberController {
     public ResponseEntity<Void> kickMember(@PathVariable Long groupId,
                                            @PathVariable Long userId,
                                            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateUser(userDetails);
         groupMemberService.kickMember(groupId, userDetails.getUser(), userId);
         return ResponseEntity.ok().build();
     }
@@ -51,6 +61,7 @@ public class GroupMemberController {
     public ResponseEntity<Void> transferLeadership(@PathVariable Long groupId,
                                                    @PathVariable Long userId,
                                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateUser(userDetails);
         groupMemberService.transferLeadership(groupId, userDetails.getUser(), userId);
         return ResponseEntity.ok().build();
     }
@@ -58,6 +69,8 @@ public class GroupMemberController {
     @GetMapping("/role")
     public ResponseEntity<GroupRoleResponseDto> getMyGroupRole(@PathVariable Long groupId,
                                                                @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateUser(userDetails);
+
         boolean isMember = groupMemberService.isMember(groupId, userDetails.getUser());
         boolean isLeader = groupMemberService.isLeader(groupId, userDetails.getUser());
 
@@ -69,5 +82,11 @@ public class GroupMemberController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    private void validateUser(CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            throw new AccessDeniedException("로그인이 필요합니다.");
+        }
     }
 }
