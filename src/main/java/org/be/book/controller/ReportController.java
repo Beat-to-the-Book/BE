@@ -32,7 +32,7 @@ public class ReportController {
     }
 
     // 1. 독후감 작성
-    @PostMapping
+    @PostMapping("/me")
     public ResponseEntity<ReportResponse> writeReport(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                       @RequestBody ReportRequest request) {
         validateAuth(userDetails);
@@ -48,7 +48,7 @@ public class ReportController {
     }
 
     // 3. 내 독후감 단건 조회
-    @GetMapping("/{id}")
+    @GetMapping("/me/{id}")
     public ResponseEntity<ReportResponse> getReport(@PathVariable Long id,
                                                     @AuthenticationPrincipal CustomUserDetails userDetails) {
         if (userDetails == null) {
@@ -58,7 +58,7 @@ public class ReportController {
     }
 
     // 4. 수정
-    @PutMapping("/{id}")
+    @PutMapping("/me/{id}")
     public ResponseEntity<Void> updateReport(@PathVariable Long id,
                                              @RequestBody ReportRequest request,
                                              @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -70,7 +70,7 @@ public class ReportController {
     }
 
     // 5. 삭제
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/me/{id}")
     public ResponseEntity<Void> deleteReport(@PathVariable Long id,
                                              @AuthenticationPrincipal CustomUserDetails userDetails) {
         if (userDetails == null) {
