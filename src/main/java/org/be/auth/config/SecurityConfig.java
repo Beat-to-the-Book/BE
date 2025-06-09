@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/community/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/groups").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/groups").authenticated()
+                        .requestMatchers("/api/reports/**").authenticated()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
