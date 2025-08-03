@@ -1,28 +1,21 @@
 package org.be.recommend.config;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import org.be.recommend.dto.RecommendResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
 
     private ObjectMapper objectMapper() {
-        BasicPolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-                .allowIfSubType("org.be")           // Entity, Dto 등 허용
-                .allowIfSubType("java.util")        // List, ArrayList 등 허용
-                .build();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
-        return objectMapper;
+        return new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @Bean
@@ -31,7 +24,12 @@ public class RedisConfig {
         template.setConnectionFactory(connectionFactory);
 
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper()));
+
+        Jackson2JsonRedisSerializer<RecommendResponse> valueSerializer =
+                new Jackson2JsonRedisSerializer<>(objectMapper(), RecommendResponse.class);
+
+        template.setValueSerializer(valueSerializer);
+        template.afterPropertiesSet();
 
         return template;
     }
