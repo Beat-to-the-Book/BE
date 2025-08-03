@@ -8,6 +8,7 @@ public class RecommendRequestMessage {
     private String userId;
     private List<ReadBook> readBooks;
     private List<UserBehavior> userBehaviors;
+    private Long startTime; // 전송 시작 시점
 
     @Data
     public static class ReadBook {

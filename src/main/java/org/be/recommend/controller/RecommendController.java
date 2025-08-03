@@ -22,7 +22,7 @@ public class RecommendController {
     @PostMapping
     @Transactional
     public ResponseEntity<?> recommendBooks(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        String userId = userDetails.getUser().getUserId();
+        String userId = userDetails.getUsername();
 
         RecommendResponse cachedRecommendations = recommendService.checkCache(userId);
 
@@ -37,9 +37,10 @@ public class RecommendController {
         recommendService.recommendBooks(userDetails.getUser());
 
         // 추천 결과가 Redis에 저장될 때까지 일정 시간 동안 반복적으로 확인하는 결과 폴링
-        // 최대 5초 동안 100ms 간격으로 Redis 확인
-        int maxAttempts = 50;
-        int delayMillis = 100;
+        // 0.5초 간격으로 30번, 15초 동안 Redis 확인
+        int maxAttempts = 30;           // 요청 수
+        int delayMillis = 500;         // 한 번 기다리는 시간 (500ms → 0.5초)
+
         for (int i = 0; i < maxAttempts; i++) {
             try {
                 Thread.sleep(delayMillis);
@@ -50,14 +51,16 @@ public class RecommendController {
 
             RecommendResponse result = recommendService.checkCache(userId);
             if (result != null && result.getRecommendedBooks() != null && !result.getRecommendedBooks().isEmpty()) {
-                log.info("[ASYNC POLL SUCCESS] 추천 결과 확보 - userId={}", userId);
-                return ResponseEntity.ok(result);
+                log.info("[ASYNC POLL SUCCESS] 추천 결과 확보 - userId={}, 시도={}회", userId, i + 1);
+                return ResponseEntity.ok(result);  // 성공 시 추천 결과 바로 반환
             }
+
+            log.info("[POLLING] 추천 결과 대기 중 - userId={}, 시도={}", userId, i + 1);
         }
 
-        // 추천 결과가 5초 안에 생성되지 않았거나, 추천 결과 생성 실패
+        // 추천 결과가 15초 안에 생성되지 않았거나, 추천 결과 생성 실패
         log.warn("[ASYNC POLL TIMEOUT] 추천 결과 생성 실패 - userId={}", userId);
         return ResponseEntity.status(202) // 202 Accepted
-                .body("추천 결과를 생성 중입니다. 잠시 후 다시 요청하세요.");
+                .body("추천 결과를 생성 중 입니다. 잠시 후 다시 요청하세요.");
     }
 }
