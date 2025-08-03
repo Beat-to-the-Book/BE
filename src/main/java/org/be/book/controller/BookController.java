@@ -38,14 +38,10 @@ public class BookController {
     }
 
     // 도서 검색
-    @Operation(summary = "도서 검색", description = "도서 제목에 포함된 키워드로 도서를 검색합니다.")
+    @Operation(summary = "도서 검색", description = "도서 제목과 저자에 키워드가 포함된 도서를 검색합니다.")
     @GetMapping("/search")
-    public ResponseEntity<List<Book>> searchBooks(
-            @Parameter(description = "도서 제목 키워드", example = "자바")
-            @RequestParam String keyword)
-    {
-        // 책 제목에 키워드가 포함된 도서 조회
-        return ResponseEntity.ok(bookService.searchBooksByTitle(keyword));
+    public ResponseEntity<List<Book>> searchBooks(@RequestParam("keyword") String keyword) {
+        return ResponseEntity.ok(bookService.searchBooks(keyword));
     }
 
     // 관리자가 직접 도서 추가
