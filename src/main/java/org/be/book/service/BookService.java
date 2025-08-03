@@ -29,8 +29,8 @@ public class BookService {
     }
 
     // 책 제목에 키워드가 포함된 도서 조회
-    public List<Book> searchBooksByTitle(String keyword) {
-        return bookRepository.findAllByTitleContaining(keyword);
+    public List<Book> searchBooks(String keyword) {
+        return bookRepository.searchByKeyword(keyword);
     }
 
     // 관리자가 직접 도서 추가
