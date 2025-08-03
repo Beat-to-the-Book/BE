@@ -25,6 +25,9 @@ public class KafkaProducerService {
 
     public void sendToFlask(RecommendRequestMessage message) {
         try {
+            // 추천 요청 시작 시간 설정
+            message.setStartTime(System.currentTimeMillis());
+
             String jsonMessage = objectMapper.writeValueAsString(message);
             log.info("Kafka 전송 데이터(JSON): {}", jsonMessage);
 
