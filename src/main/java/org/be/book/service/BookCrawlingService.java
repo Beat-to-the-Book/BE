@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Service
@@ -229,6 +230,11 @@ public class BookCrawlingService {
                         book.setFrontCoverImageUrl(frontCoverImageUrlDetail);
                         book.setBackCoverImageUrl(backCoverImageUrlDetail);
                         book.setLeftCoverImageUrl(leftCoverImageUrlDetail);
+
+                        // 초기 대여 재고를 2~10 사이 랜덤으로 세팅
+                        int randomStock = ThreadLocalRandom.current().nextInt(2, 11);
+                        book.setRentalStock(randomStock);
+                        log.info("📦 초기 대여 재고: {}", randomStock);
 
                         // 중복 책 저장 방지
                         if (bookRepository.existsByTitleAndAuthor(title, author)) {

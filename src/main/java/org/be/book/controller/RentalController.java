@@ -1,8 +1,11 @@
 package org.be.book.controller;
 
 import org.be.book.dto.AddRentalRequest;
+import org.be.book.dto.RentalActiveResponse;
+import org.be.book.dto.RentalResponse;
 import org.be.book.model.Book;
 import org.be.book.model.Rental;
+import org.be.book.dto.ReturnRentalRequest;
 import org.be.book.service.RentalService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,9 +33,29 @@ public class RentalController {
         return ResponseEntity.ok(rentedBooks);
     }
 
-    // 관리자가 직접 대여 도서 추가
-    @PostMapping("/add")
-    public ResponseEntity<Rental> addRental(@RequestBody AddRentalRequest addRentalRequest) {
+    @GetMapping("/active")
+    public ResponseEntity<List<RentalActiveResponse>> getActiveRentals(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String userId = userDetails.getUsername();
+        return ResponseEntity.ok(rentalService.getActiveRentals(userId));
+    }
+
+    // 사용자가 대여 버튼을 눌렀을 때 대여 생성
+    @PostMapping
+    public ResponseEntity<RentalResponse> addRental(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody AddRentalRequest addRentalRequest) {
+        addRentalRequest.setUserId(userDetails.getUsername());
         return ResponseEntity.ok(rentalService.addRental(addRentalRequest));
+    }
+
+    // 반납 엔드포인트 추가
+    @PostMapping("/return")
+    public ResponseEntity<RentalResponse> returnRental(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestBody ReturnRentalRequest req) {
+        req.setUserId(user.getUsername());
+        RentalResponse response = rentalService.returnRental(req);
+        return ResponseEntity.ok(response);
     }
 }

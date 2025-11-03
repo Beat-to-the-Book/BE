@@ -42,6 +42,12 @@ public class Book {
     @Column(length = 500)
     private String backCoverImageUrl;
 
+    @Column(nullable = false)
+    private int rentalStock = 0;
+
+    @Version
+    private Long version;
+
     public Book() {}
 
     public Book(String title, String author,  double price, String genre,
@@ -84,4 +90,16 @@ public class Book {
 
     public String getBackCoverImageUrl() { return backCoverImageUrl; }
     public void setBackCoverImageUrl(String backCoverImageUrl) { this.backCoverImageUrl = backCoverImageUrl; }
+
+    public int getRentalStock() { return rentalStock; }
+    public void setRentalStock(int rentalStock) { this.rentalStock = rentalStock; }
+
+    public void decreaseRentalStock() {
+        if (rentalStock <= 0) throw new IllegalStateException("대여 재고가 부족합니다.");
+        rentalStock--;
+    }
+
+    public void increaseRentalStock() { rentalStock++; }
+
+    public Long getVersion() { return version; }
 }
