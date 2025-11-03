@@ -15,7 +15,9 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -89,46 +91,45 @@ public class RecommendService {
     public void recommendBooks(User user) {
         String userId = user.getUserId();
 
-        // 사용자의 구매 도서 조회
-        List<RecommendRequestMessage.ReadBook> purchasedBooks = purchaseRepository.findByUser(user).stream()
-                .map(Purchase::getBook)
-                .map(book -> {
-                    RecommendRequestMessage.ReadBook dto = new RecommendRequestMessage.ReadBook();
-                    dto.setBookId(book.getId());
-                    dto.setTitle(book.getTitle() == null ? "" : book.getTitle());
-                    dto.setAuthor(book.getAuthor() == null ? "" : book.getAuthor());
-                    dto.setGenre(book.getGenre() == null ? "" : book.getGenre());
-                    return dto;
-                }).collect(Collectors.toList());
+        Map<Long, RecommendRequestMessage.ReadBook> readBookMap = new HashMap<>();
 
-        log.info("구매한 책 수: {}", purchasedBooks.size());
-        log.info("구매한 책 목록: {}", purchasedBooks.stream()
-                .map(b -> String.format("[title=%s, author=%s, genre=%s]", b.getTitle(), b.getAuthor(), b.getGenre()))
-                .collect(Collectors.joining(", "))
-        );
+        // 구매 도서 반영
+        for (Purchase purchase : purchaseRepository.findByUser(user)) {
+            var book = purchase.getBook();
+            if (book == null) continue;
 
-        // 사용자의 대여 도서 조회
-        List<RecommendRequestMessage.ReadBook> rentedBooks = rentalRepository.findByUser(user).stream()
-                .map(Rental::getBook)
-                .map(book -> {
-                    RecommendRequestMessage.ReadBook dto = new RecommendRequestMessage.ReadBook();
-                    dto.setBookId(book.getId());
-                    dto.setTitle(book.getTitle() == null ? "" : book.getTitle());
-                    dto.setAuthor(book.getAuthor() == null ? "" : book.getAuthor());
-                    dto.setGenre(book.getGenre() == null ? "" : book.getGenre());
-                    return dto;
-                }).collect(Collectors.toList());
+            readBookMap.computeIfAbsent(book.getId(), id -> {
+                var dto = new RecommendRequestMessage.ReadBook();
+                dto.setBookId(book.getId());
+                dto.setTitle(book.getTitle() == null ? "" : book.getTitle());
+                dto.setAuthor(book.getAuthor() == null ? "" : book.getAuthor());
+                dto.setGenre(book.getGenre() == null ? "" : book.getGenre());
+                dto.setPrice(book.getPrice() != null ? book.getPrice() : 0);
+                dto.setPurchased(true);
+                dto.setRented(false);
+                return dto;
+            }).setPurchased(true);
+        }
 
-        log.info("대여한 책 수: {}", rentedBooks.size());
-        log.info("대여한 책 목록: {}", rentedBooks.stream()
-                .map(b -> String.format("[title=%s, author=%s, genre=%s]", b.getTitle(), b.getAuthor(), b.getGenre()))
-                .collect(Collectors.joining(", "))
-        );
+        // 대여 도서 반영
+        for (Rental rental : rentalRepository.findByUser(user)) {
+            var book = rental.getBook();
+            if (book == null) continue;
 
-        // 전체 도서 목록 리스트 생성
-        List<RecommendRequestMessage.ReadBook> readBooks = new ArrayList<>();
-        readBooks.addAll(purchasedBooks);
-        readBooks.addAll(rentedBooks);
+            readBookMap.computeIfAbsent(book.getId(), id -> {
+                var dto = new RecommendRequestMessage.ReadBook();
+                dto.setBookId(book.getId());
+                dto.setTitle(book.getTitle() == null ? "" : book.getTitle());
+                dto.setAuthor(book.getAuthor() == null ? "" : book.getAuthor());
+                dto.setGenre(book.getGenre() == null ? "" : book.getGenre());
+                dto.setPrice(book.getPrice() != null ? book.getPrice() : 0);
+                dto.setPurchased(false);
+                dto.setRented(true);
+                return dto;
+            }).setRented(true);
+        }
+
+        List<RecommendRequestMessage.ReadBook> readBooks = new ArrayList<>(readBookMap.values());
 
         if (readBooks.isEmpty()) {
             log.warn("사용자 {}가 대여하거나 구매한 책이 없습니다.", userId);
@@ -141,6 +142,7 @@ public class RecommendService {
                     dto.setBookId(behavior.getBookId());
                     dto.setStayTime(behavior.getStayTime());
                     dto.setScrollDepth(behavior.getScrollDepth());
+                    dto.setTimestamp(behavior.getTimestamp());
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -149,6 +151,7 @@ public class RecommendService {
         message.setUserId(userId);
         message.setReadBooks(readBooks);
         message.setUserBehaviors(behaviors);
+        message.setStartTime(System.currentTimeMillis());
 
         log.info("Spring Boot 추천 요청 전송 - userId={}, 읽은 책 수={}, 행동 데이터 수={}",
                 userId, readBooks.size(), behaviors.size());
@@ -157,13 +160,13 @@ public class RecommendService {
                 .collect(Collectors.joining(", "))
         );
         log.info("행동 데이터 목록: {}", behaviors.stream()
-                .map(b -> String.format("[bookId=%s, stayTime=%s, scrollDepth=%s]", b.getBookId(), b.getStayTime(), b.getScrollDepth()))
+                .map(b -> String.format("[bookId=%s, stayTime=%s, scrollDepth=%s, timestamp=%s]", b.getBookId(), b.getStayTime(), b.getScrollDepth(), b.getTimestamp()))
                 .collect(Collectors.joining(", "))
         );
 
         // Spring → Flask 요청 전송 직전 로그 (시작 시점 기록)
         long startTime = System.currentTimeMillis();
-        log.info("[TO FLASK SEND START] userId={}, timestamp={}", userId, startTime);
+        log.info("[TO FLASK SEND START] userId={}, startTime={}", userId, startTime);
 
         if (useKafka) {
             // Kafka로 추천 요청 전송
