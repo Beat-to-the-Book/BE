@@ -33,6 +33,9 @@ public class User {
 
     private String role;
 
+    @Column(name = "total_points", nullable = false)
+    private int totalPoints = 0;
+
     public User() {}
 
     public User(String userId, String username, String email, String password, String role) {
@@ -73,4 +76,8 @@ public class User {
     public int hashCode() {
         return 31;
     }
+
+    public int getTotalPoints() { return totalPoints; }
+
+    public void addPoints(int delta) { this.totalPoints += delta; }
 }
