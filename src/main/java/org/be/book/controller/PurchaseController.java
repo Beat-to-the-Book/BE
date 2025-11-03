@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.be.book.dto.PurchaseResponse;
 
 import java.util.List;
 
@@ -22,17 +23,23 @@ public class PurchaseController {
 
     // 특정 유저의 구매 기록 조회
     @GetMapping("/history")
-    public ResponseEntity<List<Book>> getPurchaseHistory(
+    public ResponseEntity<List<PurchaseResponse>> getPurchaseHistory(
             @AuthenticationPrincipal UserDetails userDetails) {
         String userId = userDetails.getUsername();
-
-        List<Book> purchasedBooks = purchaseService.getPurchaseHistory(userId);
-        return ResponseEntity.ok(purchasedBooks);
+        return ResponseEntity.ok(purchaseService.getPurchaseHistoryWithStatus(userId));
     }
 
     // 관리자가 직접 구매 도서 추가
     @PostMapping("/add")
     public ResponseEntity<Purchase> addPurchase(@RequestBody AddPurchaseRequest addPurchaseRequest) {
         return ResponseEntity.ok(purchaseService.addPurchase(addPurchaseRequest));
+    }
+
+    @PostMapping("/refund")
+    public ResponseEntity<PurchaseResponse> requestRefund(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestBody org.be.book.dto.RefundPurchaseRequest req) {
+        req.setUserId(user.getUsername());
+        return ResponseEntity.ok(purchaseService.requestRefund(req));
     }
 }
