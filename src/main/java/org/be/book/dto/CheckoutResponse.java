@@ -1,9 +1,15 @@
 package org.be.book.dto;
-import lombok.AllArgsConstructor; import lombok.Getter;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.be.point.dto.MilestoneAwardResponse;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class CheckoutResponse {
     private Long orderId;
-    private String payUrl; // 프론트 결제 페이지 경로(or PG URL)
+    private String payUrl;
+    private MilestoneAwardResponse milestone;
 }

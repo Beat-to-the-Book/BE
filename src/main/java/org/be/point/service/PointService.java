@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.be.point.dto.MilestoneAwardResponse;
 
 @Service
 public class PointService {
@@ -94,5 +95,34 @@ public class PointService {
         }
 
         return new ThrowBookResponse(book.getId(), true, awarded, user.getTotalPoints());
+    }
+
+    @Transactional
+    public MilestoneAwardResponse checkAndAwardMilestone(String userId) {
+        var user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자가 존재하지 않습니다."));
+
+        int totalBooks = userBookViewRepository.findUserBooksWithFlags(user.getId()).size();
+
+        int milestone = (totalBooks / 10) * 10;
+        if (milestone < 10 || milestone > 50 || milestone <= user.getReadMilestone()) {
+            return new MilestoneAwardResponse(totalBooks, 0, 0, user.getTotalPoints());
+        }
+
+        int bonus = switch (milestone) {
+            case 10 -> 5;
+            case 20 -> 10;
+            case 30 -> 15;
+            case 40 -> 20;
+            case 50 -> 25;
+            default -> 0;
+        };
+
+        if (bonus > 0) {
+            user.addPoints(bonus);
+            user.setReadMilestone(milestone);
+        }
+
+        return new MilestoneAwardResponse(totalBooks, milestone, bonus, user.getTotalPoints());
     }
 }
