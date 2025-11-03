@@ -36,6 +36,9 @@ public class User {
     @Column(name = "total_points", nullable = false)
     private int totalPoints = 0;
 
+    @Column(name = "read_milestone", nullable = false)
+    private int readMilestone = 0;
+
     public User() {}
 
     public User(String userId, String username, String email, String password, String role) {
@@ -80,4 +83,7 @@ public class User {
     public int getTotalPoints() { return totalPoints; }
 
     public void addPoints(int delta) { this.totalPoints += delta; }
+
+    public int getReadMilestone() { return readMilestone; }
+    public void setReadMilestone(int readMilestone) { this.readMilestone = readMilestone; }
 }

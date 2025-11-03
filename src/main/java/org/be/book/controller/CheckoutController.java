@@ -1,10 +1,10 @@
-// org/be/book/controller/CheckoutController.java
 package org.be.book.controller;
 
 import org.be.book.dto.CheckoutRequest;
 import org.be.book.dto.CheckoutResponse;
 import org.be.book.dto.PaymentWebhookRequest;
 import org.be.book.service.CheckoutService;
+import org.be.point.dto.MilestoneAwardResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,9 +33,10 @@ public class CheckoutController {
 
     // 개발용: PG 없이 결제 성공 시뮬레이션
     @PostMapping("/confirm")
-    public ResponseEntity<Void> confirmForDev(@AuthenticationPrincipal UserDetails user,
-                                              @RequestParam Long orderId) {
-        checkoutService.finalizeOrderForTest(user.getUsername(), orderId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<CheckoutResponse> confirmForDev(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestParam Long orderId) {
+        CheckoutResponse response = checkoutService.finalizeOrderForTest(user.getUsername(), orderId);
+        return ResponseEntity.ok(response);
     }
 }

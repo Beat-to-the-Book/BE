@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.be.point.dto.MilestoneAwardResponse;
 
 @RestController
 @RequestMapping("/api/points")
@@ -33,5 +34,12 @@ public class PointController {
     public ResponseEntity<ThrowBookResponse> throwBook(@AuthenticationPrincipal UserDetails user,
                                                        @RequestBody ThrowBookRequest req) {
         return ResponseEntity.ok(pointService.throwBook(user.getUsername(), req));
+    }
+
+    @GetMapping("/check-milestone")
+    public ResponseEntity<MilestoneAwardResponse> checkMilestone(@AuthenticationPrincipal UserDetails user) {
+        String userId = user.getUsername();
+        MilestoneAwardResponse res = pointService.checkAndAwardMilestone(userId);
+        return ResponseEntity.ok(res);
     }
 }
