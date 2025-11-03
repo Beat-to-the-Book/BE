@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.be.auth.model.User;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -22,4 +24,5 @@ public class UserBehavior {
     private Long bookId;
     private int stayTime;
     private int scrollDepth;
+    private LocalDateTime timestamp;
 }
