@@ -1,6 +1,8 @@
 package org.be.recommend.dto;
 
 import lombok.Data;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -16,6 +18,9 @@ public class RecommendRequestMessage {
         private String title;
         private String author;
         private String genre;
+        private Double price;
+        private boolean purchased;    // 구매 여부
+        private boolean rented;       // 대여 여부
     }
 
     @Data
@@ -23,5 +28,6 @@ public class RecommendRequestMessage {
         private Long bookId;
         private int stayTime; // seconds
         private int scrollDepth; // percentage
+        private LocalDateTime timestamp;
     }
 }

@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/reports/book/**").permitAll()
                         .requestMatchers("/api/reports/public/**").permitAll()
                         .requestMatchers("/api/reviews/book/**").permitAll()
+                        .requestMatchers("/actuator/prometheus").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
