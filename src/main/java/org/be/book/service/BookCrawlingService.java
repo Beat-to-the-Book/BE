@@ -236,6 +236,12 @@ public class BookCrawlingService {
                         book.setRentalStock(randomStock);
                         log.info("📦 초기 대여 재고: {}", randomStock);
 
+                        // 초기 구매 재고를 2~20 사이 랜덤으로 세팅
+                        int randomPurchaseStock = ThreadLocalRandom.current().nextInt(2, 21);
+                        book.setPurchaseStock(randomPurchaseStock);
+                        log.info("🛒 초기 구매 재고: {}", randomPurchaseStock);
+
+
                         // 중복 책 저장 방지
                         if (bookRepository.existsByTitleAndAuthor(title, author)) {
                             log.info("⚠️ 이미 존재하는 책: {} - {}, 저장하지 않음", title, author);
