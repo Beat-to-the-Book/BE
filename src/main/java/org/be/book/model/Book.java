@@ -45,6 +45,9 @@ public class Book {
     @Column(nullable = false)
     private int rentalStock = 0;
 
+    @Column(nullable = false)
+    private int purchaseStock = 0;
+
     @Version
     private Long version;
 
@@ -102,4 +105,25 @@ public class Book {
     public void increaseRentalStock() { rentalStock++; }
 
     public Long getVersion() { return version; }
+
+    public int getPurchaseStock() { return purchaseStock; }
+    public void setPurchaseStock(int purchaseStock) { this.purchaseStock = purchaseStock; }
+
+    public void decreasePurchaseStock() { decreasePurchaseStock(1); }
+
+    public void decreasePurchaseStock(int quantity) {
+        if (quantity <= 0) quantity = 1;
+        if (this.purchaseStock - quantity < 0) {
+            throw new IllegalStateException("구매 재고가 부족합니다.");
+        }
+        this.purchaseStock -= quantity;
+    }
+
+    public void increasePurchaseStock() {
+        increasePurchaseStock(1);
+    }
+    public void increasePurchaseStock(int quantity) {
+        if (quantity <= 0) quantity = 1;
+        this.purchaseStock += quantity;
+    }
 }
