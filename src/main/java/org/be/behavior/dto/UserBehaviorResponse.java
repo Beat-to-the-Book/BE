@@ -2,14 +2,16 @@ package org.be.behavior.dto;
 
 import lombok.Builder;
 import lombok.Getter;
-
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class UserBehaviorRequest {
+public class UserBehaviorResponse {
+    private Long id;
+    private String userId;
+    private String username;
     private Long bookId;
-    private int stayTime; // seconds
-    private int scrollDepth; // percentage
+    private Integer stayTime;
+    private Integer scrollDepth;
     private LocalDateTime timestamp;
 }
