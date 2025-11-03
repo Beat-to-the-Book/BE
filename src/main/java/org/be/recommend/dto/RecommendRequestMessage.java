@@ -18,6 +18,9 @@ public class RecommendRequestMessage {
         private String title;
         private String author;
         private String genre;
+        private Double price;
+        private boolean purchased;    // 구매 여부
+        private boolean rented;       // 대여 여부
     }
 
     @Data
