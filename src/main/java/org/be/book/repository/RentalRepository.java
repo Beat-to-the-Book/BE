@@ -1,6 +1,7 @@
 package org.be.book.repository;
 
 import org.be.auth.model.User;
+import org.be.book.model.Book;
 import org.be.book.model.Rental;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,7 +10,8 @@ import java.util.List;
 
 @Repository
 public interface RentalRepository extends JpaRepository<Rental, Long> {
-    // 지연 로딩(Lazy Loading)을 피하고, book 엔티티를 함께 미리 로딩(Eager Loading)
     @EntityGraph(attributePaths = {"book"})
     List<Rental> findByUser(User user);
+    List<Rental> findByUserAndStatus(User user, Rental.Status status);
+    boolean existsByUserAndBookAndStatus(User user, Book book, Rental.Status status);
 }
