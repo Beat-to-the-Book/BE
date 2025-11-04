@@ -70,6 +70,7 @@ public class RentalService {
                     long rawDays = ChronoUnit.DAYS.between(LocalDate.now(), due);
                     long daysRemaining = Math.max(0, rawDays);
                     return new RentalActiveResponse(
+                            rental.getId(),
                             rental.getBook().getId(),
                             rental.getBook().getTitle(),
                             rental.getBook().getAuthor(),

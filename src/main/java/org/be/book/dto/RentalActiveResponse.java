@@ -10,6 +10,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RentalActiveResponse {
+    private Long rentalId;
     private Long bookId;
     private String title;
     private String author;
