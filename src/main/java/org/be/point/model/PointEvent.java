@@ -12,7 +12,8 @@ public class PointEvent {
 
     public enum Reason {
         THROW_BOOK_SUCCESS,
-        MILESTONE_10, MILESTONE_20, MILESTONE_30, MILESTONE_40, MILESTONE_50
+        MILESTONE_10, MILESTONE_20, MILESTONE_30, MILESTONE_40, MILESTONE_50,
+        DECORATION_PURCHASE
     }
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
