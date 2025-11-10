@@ -7,7 +7,9 @@ import org.be.auth.repository.UserRepository;
 import org.be.book.model.Book;
 import org.be.book.repository.BookRepository;
 import org.be.point.dto.*;
+import org.be.point.model.PointEvent;
 import org.be.point.model.UserBookRecord;
+import org.be.point.repository.PointEventRepository;
 import org.be.point.repository.UserBookRecordRepository;
 import org.be.point.repository.UserBookViewRepository;
 import org.springframework.http.HttpStatus;
@@ -23,15 +25,18 @@ public class PointService {
     private final BookRepository bookRepository;
     private final UserBookRecordRepository userBookRecordRepository;
     private final UserBookViewRepository userBookViewRepository;
+    private final PointEventRepository pointEventRepository;
 
     public PointService(UserRepository userRepository,
                         BookRepository bookRepository,
                         UserBookRecordRepository userBookRecordRepository,
-                        UserBookViewRepository userBookViewRepository) {
+                        UserBookViewRepository userBookViewRepository,
+                        PointEventRepository pointEventRepository) {
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
         this.userBookRecordRepository = userBookRecordRepository;
         this.userBookViewRepository = userBookViewRepository;
+        this.pointEventRepository = pointEventRepository;
     }
 
     @Transactional(readOnly = true)
@@ -92,6 +97,10 @@ public class PointService {
         if (req.success()) {
             user.addPoints(5);
             awarded = 5;
+
+            pointEventRepository.save(
+                    new PointEvent(user, 5, PointEvent.Reason.THROW_BOOK_SUCCESS)
+            );
         }
 
         return new ThrowBookResponse(book.getId(), true, awarded, user.getTotalPoints());
@@ -121,6 +130,16 @@ public class PointService {
         if (bonus > 0) {
             user.addPoints(bonus);
             user.setReadMilestone(milestone);
+
+            PointEvent.Reason reason = switch (milestone) {
+                case 10 -> PointEvent.Reason.MILESTONE_10;
+                case 20 -> PointEvent.Reason.MILESTONE_20;
+                case 30 -> PointEvent.Reason.MILESTONE_30;
+                case 40 -> PointEvent.Reason.MILESTONE_40;
+                case 50 -> PointEvent.Reason.MILESTONE_50;
+                default -> PointEvent.Reason.MILESTONE_10;
+            };
+            pointEventRepository.save(new PointEvent(user, bonus, reason));
         }
 
         return new MilestoneAwardResponse(totalBooks, milestone, bonus, user.getTotalPoints());
