@@ -1,5 +1,5 @@
 # OpenJDK 17을 사용
-FROM openjdk:17-jdk-slim AS build
+FROM eclipse-temurin:17-jdk AS build
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -14,16 +14,32 @@ RUN chmod +x gradlew
 RUN ./gradlew build -x test
 
 # 실행 환경 설정
-FROM openjdk:17-jdk-slim
+FROM debian:bookworm
 
 WORKDIR /app
 
-# 크롬 및 크롬드라이버 설치
-RUN apt-get update && \
-    apt-get install -y wget unzip curl gnupg ca-certificates \
-                       chromium chromium-driver && \
+# JRE 및 기본 유틸 설치 (캐시 최소화)
+RUN apt-get -o Acquire::Retries=5 update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates gnupg \
+        curl wget unzip \
+        openjdk-17-jre-headless && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+# Chromium만 먼저 설치 (용량 피크 분산)
+RUN apt-get -o Acquire::Retries=5 update && \
+    apt-get install -y --no-install-recommends \
+        chromium && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+# Chromium-Driver 별도 설치 (용량 피크 분산)
+RUN apt-get -o Acquire::Retries=5 update && \
+    apt-get install -y --no-install-recommends \
+        chromium-driver && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # 빌드된 JAR 파일을 실행할 환경에 복사
 COPY --from=build /app/build/libs/*.jar app.jar

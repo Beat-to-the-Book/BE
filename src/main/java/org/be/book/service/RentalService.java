@@ -1,4 +1,7 @@
 package org.be.book.service;
+
+import org.be.point.dto.MilestoneAwardResponse;
+import org.be.point.service.PointService;
 import org.be.book.dto.RentalActiveResponse;
 import org.be.book.dto.RentalResponse;
 import org.springframework.http.HttpStatus;
@@ -8,7 +11,6 @@ import org.be.auth.model.User;
 import org.be.auth.repository.UserRepository;
 import org.be.book.dto.AddRentalRequest;
 import org.be.book.model.Book;
-import org.be.book.model.Purchase;
 import org.be.book.model.Rental;
 import org.be.book.repository.BookRepository;
 import org.be.book.repository.RentalRepository;
@@ -30,13 +32,16 @@ public class RentalService {
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
     private final RentalRepository rentalRepository;
+    private final PointService pointService;
 
     public RentalService(UserRepository userRepository,
                          BookRepository bookRepository,
-                         RentalRepository rentalRepository) {
+                         RentalRepository rentalRepository,
+                         PointService pointService) {
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
         this.rentalRepository = rentalRepository;
+        this.pointService = pointService;
     }
 
     @Transactional(readOnly = true)
@@ -65,6 +70,7 @@ public class RentalService {
                     long rawDays = ChronoUnit.DAYS.between(LocalDate.now(), due);
                     long daysRemaining = Math.max(0, rawDays);
                     return new RentalActiveResponse(
+                            rental.getId(),
                             rental.getBook().getId(),
                             rental.getBook().getTitle(),
                             rental.getBook().getAuthor(),
@@ -95,6 +101,7 @@ public class RentalService {
             log.warn("이미 해당 도서를 대여 중입니다. userId={}, bookId={}", user.getUserId(), book.getId());
             throw new IllegalStateException("이미 해당 도서를 대여 중입니다.");
         }
+
         log.debug("대여 전 재고: {}", book.getRentalStock());
         try {
             book.decreaseRentalStock();
@@ -108,8 +115,31 @@ public class RentalService {
 
         Rental rental = new Rental(user, book);
         Rental savedRental = rentalRepository.save(rental);
+
+        MilestoneAwardResponse milestone = null;
+        try {
+            var result = pointService.checkAndAwardMilestone(user.getUserId());
+            milestone = result; // 프론트 알림용으로 응답에 포함
+            if (result.awarded() > 0) {
+                log.info("🎯 마일스톤 보너스 지급: userId={}, milestone={}, bonus={}, totalPoints={}",
+                        user.getUserId(), result.milestone(), result.awarded(), result.totalPoints());
+            }
+        } catch (Exception ex) {
+            log.warn("⚠️ 마일스톤 포인트 지급 중 예외 발생(무시): {}", ex.getMessage());
+        }
+
         log.info("대여 완료 - rentalId={}, userId={}, bookId={}", savedRental.getId(), user.getUserId(), book.getId());
-        return toResponse(savedRental);
+
+        return new RentalResponse(
+                savedRental.getId(),
+                savedRental.getBook().getId(),
+                savedRental.getBook().getTitle(),
+                savedRental.getRentalDate(),
+                savedRental.getDueDate(),
+                savedRental.getReturnDate(),
+                savedRental.getStatus().name(),
+                milestone
+        );
     }
 
     @Transactional
@@ -134,18 +164,16 @@ public class RentalService {
         rental.getBook().increaseRentalStock();
 
         log.info("반납 완료 - rentalId={}, userId={}, bookId={}", rental.getId(), user.getUserId(), rental.getBook().getId());
-        return toResponse(rental);
-    }
 
-    private RentalResponse toResponse(Rental r) {
         return new RentalResponse(
-                r.getId(),
-                r.getBook().getId(),
-                r.getBook().getTitle(),
-                r.getRentalDate(),
-                r.getDueDate(),
-                r.getReturnDate(),
-                r.getStatus().name()
+                rental.getId(),
+                rental.getBook().getId(),
+                rental.getBook().getTitle(),
+                rental.getRentalDate(),
+                rental.getDueDate(),
+                rental.getReturnDate(),
+                rental.getStatus().name(),
+                null
         );
     }
 }
