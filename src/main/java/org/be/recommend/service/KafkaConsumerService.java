@@ -14,12 +14,11 @@ import java.time.Duration;
 @Service
 public class KafkaConsumerService {
     private final RedisTemplate<String, RecommendResponse> redisTemplate;
+    private static final String REDIS_KEY_PREFIX = "recommend:user:";
+    private static final Logger log = LoggerFactory.getLogger(KafkaConsumerService.class);
 
     @Value("${app.redis.use-redis}")
     private boolean useRedis;
-
-    private static final String REDIS_KEY_PREFIX = "recommend:user:";
-    private static final Logger log = LoggerFactory.getLogger(KafkaConsumerService.class);
 
     public KafkaConsumerService(RedisTemplate<String, RecommendResponse> redisTemplate) {
         this.redisTemplate = redisTemplate;
