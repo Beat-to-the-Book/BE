@@ -3,6 +3,7 @@ package org.be.recommend.controller;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.be.auth.service.CustomUserDetails;
+import org.be.recommend.dto.RecommendReasonResponse;
 import org.be.recommend.dto.RecommendResponse;
 import org.be.recommend.service.RecommendService;
 import org.slf4j.Logger;
@@ -62,5 +63,19 @@ public class RecommendController {
         log.warn("[ASYNC POLL TIMEOUT] 추천 결과 생성 실패 - userId={}", userId);
         return ResponseEntity.status(202) // 202 Accepted
                 .body("추천 결과를 생성 중 입니다. 잠시 후 다시 요청하세요.");
+    }
+
+    @PostMapping("/reason")
+    @Transactional
+    public ResponseEntity<?> getRecommendationReasons(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        String userId = userDetails.getUsername();
+
+        RecommendResponse cachedRecommendations = recommendService.checkCache(userId);
+        if (cachedRecommendations == null || cachedRecommendations.getRecommendedBooks().isEmpty()) {
+            return ResponseEntity.status(404).body("추천 결과가 존재하지 않습니다.");
+        }
+
+        RecommendReasonResponse reasonResponse = recommendService.fetchRecommendationReasons(userId, cachedRecommendations);
+        return ResponseEntity.ok(reasonResponse);
     }
 }

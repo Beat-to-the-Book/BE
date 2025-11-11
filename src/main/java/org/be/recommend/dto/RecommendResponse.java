@@ -4,7 +4,7 @@ import lombok.*;
 
 import java.util.List;
 
-// 도서 정보 전달을 위한 dto
+// 추천 도서 정보 전달을 위한 dto
 @Data
 public class RecommendResponse {
     private List<RecommendBook> recommendedBooks;
@@ -15,15 +15,6 @@ public class RecommendResponse {
         private String title;
         private String author;
         private String coverImageUrl;
-
-        public RecommendBook() {}
-
-        public RecommendBook(Long bookId, String title, String author, String coverImageUrl) {
-            this.bookId = bookId;
-            this.title = title;
-            this.author = author;
-            this.coverImageUrl = coverImageUrl;
-        }
+        private Double score;
     }
 }
-

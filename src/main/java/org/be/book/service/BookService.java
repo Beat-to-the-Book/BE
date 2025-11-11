@@ -28,9 +28,12 @@ public class BookService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 도서를 찾을 수 없습니다."));
     }
 
-    // 책 제목에 키워드가 포함된 도서 조회
+    // 도서 제목과 저자에 키워드가 포함된 도서 조회
     public List<Book> searchBooks(String keyword) {
-        return bookRepository.searchByKeyword(keyword);
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return List.of();
+        }
+        return bookRepository.searchByKeyword(keyword.trim());
     }
 
     // 관리자가 직접 도서 추가

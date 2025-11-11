@@ -12,7 +12,12 @@ import java.util.List;
 public interface BookRepository extends JpaRepository<Book, Long> {
     boolean existsByTitleAndAuthor(String title, String author);
 
-    @Query("SELECT b FROM Book b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "OR LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    @Query("""
+        SELECT DISTINCT b
+        FROM Book b
+        WHERE
+            LOWER(b.title) LIKE LOWER(CONCAT('%', TRIM(:keyword), '%'))
+            OR LOWER(b.author) LIKE LOWER(CONCAT('%', TRIM(:keyword), '%'))
+        """)
     List<Book> searchByKeyword(@Param("keyword") String keyword);
 }

@@ -9,6 +9,7 @@ import org.be.book.repository.PurchaseRepository;
 import org.be.book.repository.RentalRepository;
 import org.be.recommend.dto.RecommendResponse;
 import org.be.recommend.dto.RecommendRequestMessage;
+import org.be.recommend.dto.RecommendReasonResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
@@ -176,6 +177,37 @@ public class RecommendService {
             // 직접 Flask 호출
             log.info("[NO-KAFKA MODE] Flask 직접 호출 시작 - userId={}", userId);
             callFlaskDirectly(message);
+        }
+    }
+
+    public RecommendReasonResponse fetchRecommendationReasons(String userId, RecommendResponse baseResponse) {
+        try {
+            log.info("[REASON REQUEST] 추천 이유 요청 시작 - userId={}, 추천 결과 수={}", userId, baseResponse.getRecommendedBooks().size());
+
+            // 전달할 JSON 형식으로 직접 구성
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("userId", userId);
+            requestBody.put("recommendedBooks", baseResponse.getRecommendedBooks()); // List<Map<String, Object>>여야 함
+
+            log.info("[REASON REQUEST BODY] {}", requestBody);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<RecommendReasonResponse> response = restTemplate.exchange(
+                    flaskUrl + "/reason", HttpMethod.POST, request, RecommendReasonResponse.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody();
+            } else {
+                log.warn("[FLASK FAIL] 추천 이유 응답 실패 - status={}", response.getStatusCode());
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("[FLASK ERROR] 추천 이유 요청 중 예외 발생 - {}", e.getMessage());
+            return null;
         }
     }
 
