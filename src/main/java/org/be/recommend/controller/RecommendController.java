@@ -70,12 +70,36 @@ public class RecommendController {
     public ResponseEntity<?> getRecommendationReasons(@AuthenticationPrincipal CustomUserDetails userDetails) {
         String userId = userDetails.getUsername();
 
+        // 우선 추천 결과 확인
         RecommendResponse cachedRecommendations = recommendService.checkCache(userId);
         if (cachedRecommendations == null || cachedRecommendations.getRecommendedBooks().isEmpty()) {
+            log.warn("[REASON FAIL] 추천 결과 없음 - userId={}", userId);
             return ResponseEntity.status(404).body("추천 결과가 존재하지 않습니다.");
         }
 
-        RecommendReasonResponse reasonResponse = recommendService.fetchRecommendationReasons(userId, cachedRecommendations);
-        return ResponseEntity.ok(reasonResponse);
+        // 추천 이유 결과가 Redis에 저장될 때까지 0.5초 간격으로 최대 30회(15초) 확인
+        int maxAttempts = 30;
+        int delayMillis = 500;
+
+        for (int i = 0; i < maxAttempts; i++) {
+            RecommendReasonResponse reasonResponse = recommendService.recommendationReasons(userId, cachedRecommendations);
+            if (reasonResponse != null && reasonResponse.getBooksWithReason() != null && !reasonResponse.getBooksWithReason().isEmpty()) {
+                log.info("[ASYNC POLL SUCCESS] 추천 이유 확보 - userId={}, 시도={}회", userId, i + 1);
+                return ResponseEntity.ok(reasonResponse);
+            }
+
+            log.info("[POLLING] 추천 이유 대기 중 - userId={}, 시도={}", userId, i + 1);
+
+            try {
+                Thread.sleep(delayMillis);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+
+        log.warn("[ASYNC POLL TIMEOUT] 추천 이유 생성 실패 - userId={}", userId);
+        return ResponseEntity.status(202)
+                .body("추천 이유를 생성 중입니다. 잠시 후 다시 요청하세요.");
     }
 }
