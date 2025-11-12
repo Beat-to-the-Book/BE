@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.be.book.model.Book;
 import org.be.book.repository.BookRepository;
+import org.be.book.service.BookDetailCrawlingService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -28,6 +29,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class BookCrawlingService {
 
     private final BookRepository bookRepository;
+    private final BookDetailCrawlingService bookDetailCrawlingService;
 
     public void crawlBooks() throws Exception {
         System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
@@ -40,6 +42,8 @@ public class BookCrawlingService {
         WebDriver driver = new ChromeDriver(options);
 
         List<String> categoryUrls = List.of(
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=0",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=55890",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=170",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=2105",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=987",
@@ -48,12 +52,38 @@ public class BookCrawlingService {
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=798",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1108",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1383",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=55889",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1196",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=74",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=656",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=13789",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=517",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1322",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1230",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=336",
-                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=351"
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=351",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=112011",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1237",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=2030",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BranchType=7",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90831",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90832",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90833",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90835",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90834",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90837",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90838",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90842",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90844",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90845",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90847",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90848",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90852",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90853",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90854",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90855",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90859"
         );
 
         try {
@@ -67,7 +97,7 @@ public class BookCrawlingService {
                     Thread.sleep(5000);
 
                     String html = driver.getPageSource();
-                    Document doc = Jsoup.parse(html);
+                    Document doc = Jsoup.parse(html, url); // set baseUri so absUrl(...) resolves correctly
 
                     // 베스트셀러 목록
                     Elements booksList = doc.select(".ss_book_list:nth-child(2n+1)");
@@ -126,6 +156,10 @@ public class BookCrawlingService {
                             continue;
                         }
                         String detailUrl = detailLinkEl.absUrl("href");
+                        if (detailUrl == null || detailUrl.isBlank()) {
+                            log.warn("상세 링크가 비어있어 처리 건너뜀: {}", title);
+                            continue;
+                        }
 
                         // (5) 상세 페이지에서 커버 이미지(앞, 뒤, 왼쪽) 추출
                         String frontCoverImageUrlDetail = "http://localhost:8082/images/default_cover.jpg";
@@ -249,11 +283,21 @@ public class BookCrawlingService {
                         }
 
                         try {
-                            bookRepository.save(book);
+                            Book saved = bookRepository.save(book);
+
+                            // ✅ 책 저장 이후 상세 정보 크롤링/업서트 연계 (저장 성공시에만 수행)
+                            try {
+                                bookDetailCrawlingService.crawlAndUpsertDetails(saved.getId(), detailUrl);
+                            } catch (Exception ex) {
+                                log.warn("ℹ️ 상세정보 크롤링 스킵(오류 무시): {}", ex.getMessage());
+                            }
+
+                            books.add(saved);
                         } catch (Exception e) {
                             log.error("❌ 책 저장 실패: {}", e.getMessage());
+                            // 저장 실패 시 상세정보 크롤링을 시도하지 않음
+                            continue;
                         }
-                        books.add(book);
                     }
 
                     log.info("✅ {}페이지 - 총 {}권의 책을 저장했습니다.", page, books.size());
