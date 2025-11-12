@@ -38,8 +38,8 @@ public class RecommendController {
         recommendService.recommendBooks(userDetails.getUser());
 
         // 추천 결과가 Redis에 저장될 때까지 일정 시간 동안 반복적으로 확인하는 결과 폴링
-        // 0.5초 간격으로 30번, 15초 동안 Redis 확인
-        int maxAttempts = 30;           // 요청 수
+        // 0.5초 간격으로 60번, 30초 동안 Redis 확인
+        int maxAttempts = 60;           // 요청 수
         int delayMillis = 500;         // 한 번 기다리는 시간 (500ms → 0.5초)
 
         for (int i = 0; i < maxAttempts; i++) {
@@ -77,8 +77,8 @@ public class RecommendController {
             return ResponseEntity.status(404).body("추천 결과가 존재하지 않습니다.");
         }
 
-        // 추천 이유 결과가 Redis에 저장될 때까지 0.5초 간격으로 최대 30회(15초) 확인
-        int maxAttempts = 30;
+        // 추천 이유 결과가 Redis에 저장될 때까지 0.5초 간격으로 최대 60회(30초) 확인
+        int maxAttempts = 60;
         int delayMillis = 500;
 
         for (int i = 0; i < maxAttempts; i++) {
