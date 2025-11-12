@@ -42,6 +42,8 @@ public class BookCrawlingService {
         WebDriver driver = new ChromeDriver(options);
 
         List<String> categoryUrls = List.of(
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=0",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=55890",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=170",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=2105",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=987",
@@ -50,12 +52,38 @@ public class BookCrawlingService {
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=798",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1108",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1383",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=55889",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1196",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=74",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=656",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=13789",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=517",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1322",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1230",
                 "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=336",
-                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=351"
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=351",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=112011",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=1237",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=Bestseller&BranchType=1&CID=2030",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BranchType=7",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90831",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90832",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90833",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90835",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90834",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90837",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90838",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90842",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90844",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90845",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90847",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90848",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90852",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90853",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90854",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90855",
+                "https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=ForeignEnglish&BranchType=7&CID=90859"
         );
 
         try {
