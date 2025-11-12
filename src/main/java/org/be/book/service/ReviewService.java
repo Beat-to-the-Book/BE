@@ -9,6 +9,7 @@ import org.be.book.repository.BookRepository;
 import org.be.book.repository.ReviewRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,12 +43,14 @@ public class ReviewService {
         return toResponse(reviewRepository.save(review));
     }
 
+    @Transactional
     public ReviewResponse updateReview(User user, Long reviewId, ReviewRequest request) {
         Review review = reviewRepository.findById(reviewId)
                 .filter(r -> r.getAuthor().equals(user))
                 .orElseThrow(() -> new ResponseStatusException(FORBIDDEN, "리뷰 수정 권한이 없습니다."));
 
         review.update(request.getRating(), request.getComment());
+        reviewRepository.save(review);
         return toResponse(review);
     }
 
