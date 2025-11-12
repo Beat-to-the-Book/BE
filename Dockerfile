@@ -45,4 +45,4 @@ RUN apt-get -o Acquire::Retries=5 update && \
 COPY --from=build /app/build/libs/*.jar app.jar
 
 # 컨테이너 실행 시 Spring Boot 실행
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-Dfile.encoding=UTF-8", "-jar", "app.jar"]
