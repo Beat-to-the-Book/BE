@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "book_datail")
+@Table(name = "book_detail")
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -12,7 +12,6 @@ import lombok.*;
 public class BookDetail {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false, unique = true)
